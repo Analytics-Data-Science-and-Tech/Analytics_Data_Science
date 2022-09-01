@@ -2,10 +2,6 @@
 
 In this repository, we store the code that we developed in the different competitions that we have participated.
 
-## Forecasting Traffic Flow in US Metropolis
-
-For the March edition of the 2022 Tabular Playground Series you're challenged to forecast twelve-hours of traffic flow in a U.S. metropolis. The time series in this dataset are labelled with both location coordinates and a direction of travel -- a combination of features that will test your skill at spatio-temporal forecasting within a highly dynamic traffic network. For more info see [here](https://www.kaggle.com/competitions/tabular-playground-series-mar-2022).
-
 ## House Prices - Adavanced Regression Techniques
 
 Ask a home buyer to describe their dream house, and they probably won't begin with the height of the basement ceiling or the proximity to an east-west railroad. But this playground competition's dataset proves that much more influences price negotiations than the number of bedrooms or a white-picket fence. With 79 explanatory variables describing (almost) every aspect of residential homes in Ames, Iowa, this competition challenges you to predict the final price of each home. For more info see [here](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/overview).
@@ -22,11 +18,12 @@ This challenge serves as final project for the "How to win a data science compet
 
 We are asking you to predict total sales for every product and store in the next month. By solving this competition you will be able to apply and enhance your data science skills. For more info see [here](https://www.kaggle.com/competitions/competitive-data-science-predict-future-sales/overview).
 
-## Tabular Playground Aug-2022
+## Tabular Playground Series
 
-The August 2022 edition of the Tabular Playground Series in an opportunity to help the fictional company Keep It Dry improve its main product Super Soaker. The product is used in factories to absorb spills and leaks.
+Kaggle competitions are incredibly fun and rewarding, but they can also be intimidating for people who are relatively new in their data science journey. In the past, we've launched many Playground competitions that are more approachable than our Featured competitions and thus, more beginner-friendly.
 
-The company has just completed a large testing study for different product prototypes. Can you use this data to build a model that predicts product failures? For more info see [here](https://www.kaggle.com/competitions/tabular-playground-series-aug-2022/overview/description)
+The goal of these competitions is to provide a fun and approachable-for-anyone tabular dataset to model. These competitions are a great choice for people looking for something in between the Titanic Getting Started competition and the Featured competitions. If you're an established competitions master or grandmaster, these probably won't be much of a challenge for you; thus, we encourage you to avoid saturating the leaderboard.
+
 
 ## Store Sales Time Series Forecast
 

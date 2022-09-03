@@ -81,7 +81,7 @@ opt_cutoff = roc_auc_cutoff(Y, xgb_pred_train)
 print('The optimal cutoff is', opt_cutoff)
 
 ## Predicting on the test
-xgb_pred_test = XGBoost_md.predict_proba(test.drop(columns = ['Id'], axis = 1))[:, 1]
+xgb_pred_test = XGBoost_md.predict_proba(test)[:, 1]
 xgb_label_test = np.where(xgb_pred_test < opt_cutoff, 0, 1)
 
 ## Data-frame for submission

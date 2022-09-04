@@ -79,7 +79,7 @@ Y = train['SeriousDlqin2yrs']
         
 #     return cutoffs['cutoff'][0]
 
-XGBoost_md = XGBClassifier(colsample_bytreeb = 0.8, gamma =  0.3, learning_rate =  0.01, max_depth = 9, min_child_weight = 15, n_estimators = 300, subsample =  0.8).fit(X, Y)
+XGBoost_md = XGBClassifier(colsample_bytreeb = 0.8, gamma = 0.3, learning_rate = 0.01, max_depth = 9, min_child_weight = 15, n_estimators = 300, subsample = 0.8).fit(X, Y)
 
 ## Predicting on train to estimate cutoff
 # xgb_pred_train = XGBoost_md.predict_proba(X)[:, 1]
@@ -88,11 +88,11 @@ XGBoost_md = XGBClassifier(colsample_bytreeb = 0.8, gamma =  0.3, learning_rate 
 
 ## Predicting on the test
 xgb_pred_test = XGBoost_md.predict_proba(test)[:, 1]
-xgb_label_test = np.where(xgb_pred_test < 0.06, 0, 1)
+xgb_label_test = np.where(xgb_pred_test < 0.07, 0, 1)
 
 ## Data-frame for submission
 data_out = pd.DataFrame({'Id': test_id, 'SeriousDlqin2yrs': xgb_label_test})
-data_out.to_csv('xgb_submission_md4.csv', index = False)
+data_out.to_csv('xgb_submission_md5.csv', index = False)
 
 # The best hyper-parameters are: {'colsample_bytree': 0.8, 'gamma': 0.3, 'learning_rate': 0.01, 'max_depth': 9, 'min_child_weight': 15, 'n_estimators': 300, 'subsample': 0.8}
 

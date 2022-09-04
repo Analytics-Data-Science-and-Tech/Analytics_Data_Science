@@ -79,7 +79,7 @@ Y = train['SeriousDlqin2yrs']
         
 #     return cutoffs['cutoff'][0]
 
-XGBoost_md = XGBClassifier(colsample_bytreeb = 0.8, gamma =  0.3, learning_rate =  0.01, max_depth = 9, min_child_weight = 15, n_estimators = 300, subsample =  0.8).fit(X, Y)
+XGBoost_md = XGBClassifier(colsample_bytreeb = 0.8, gamma = 0.3, learning_rate = 0.01, max_depth = 9, min_child_weight = 15, n_estimators = 300, subsample = 0.8).fit(X, Y)
 
 ## Predicting on train to estimate cutoff
 # xgb_pred_train = XGBoost_md.predict_proba(X)[:, 1]

@@ -90,7 +90,7 @@ xgb_label_test = np.where(xgb_pred_test < opt_cutoff, 0, 1)
 
 ## Data-frame for submission
 data_out = pd.DataFrame({'Id': test_id, 'SeriousDlqin2yrs': xgb_label_test})
-data_out.to_csv('xgb_submission_md6_1.csv', index = False)
+data_out.to_csv('xgb_submission_md7_1.csv', index = False)
 
 # The best hyper-parameters are: {'colsample_bytree': 0.6, 'gamma': 0.1, 'learning_rate': 0.01, 'max_depth': 9, 'min_child_weight': 15, 'n_estimators': 300, 'subsample': 0.5}
 

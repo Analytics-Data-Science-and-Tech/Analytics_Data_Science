@@ -90,10 +90,10 @@ xgb_label_test = np.where(xgb_pred_test < opt_cutoff, 0, 1)
 
 ## Data-frame for submission
 data_out = pd.DataFrame({'Id': test_id, 'SeriousDlqin2yrs': xgb_label_test})
-data_out.to_csv('xgb_submission_md5_1.csv', index = False)
+data_out.to_csv('xgb_submission_md6_1.csv', index = False)
 
-# The best hyper-parameters are: {'colsample_bytree': 0.7, 'gamma': 0.3, 'learning_rate': 0.01, 'max_depth': 9, 'min_child_weight': 20, 'n_estimators': 300, 'subsample': 0.7}
+# The best hyper-parameters are: {'colsample_bytree': 0.6, 'gamma': 0.1, 'learning_rate': 0.01, 'max_depth': 9, 'min_child_weight': 15, 'n_estimators': 300, 'subsample': 0.6}
 
-# The best area under the ROC cure is: 0.8626419307394743
-# The optimal cutoff is 0.091559574
+# The best area under the ROC cure is: 0.8630634981385945
+# The optimal cutoff is 0.09616743
 

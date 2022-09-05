@@ -41,7 +41,7 @@ X = train.drop(columns = ['Id', 'SeriousDlqin2yrs'], axis = 1)
 Y = train['SeriousDlqin2yrs']
 
 ## Defining the hyper-parameter grid
-LightGBM_param_grid = {'n_estimators': [300, 500],
+LightGBM_param_grid = {'n_estimators': [200, 300],
                        'max_depth': [7, 9],
                        'num_leaves': [50, 60],
                        'min_data_in_leaf': [30, 35],
@@ -95,7 +95,6 @@ data_out = pd.DataFrame({'Id': test_id, 'SeriousDlqin2yrs': lightgbm_label_test}
 data_out.to_csv('lightgbm_submission_md6.csv', index = False)
 
 # The best hyper-parameters are: {'feature_fraction': 0.5, 'lambda_l1': 0, 'lambda_l2': 0, 'learning_rate': 0.01, 'max_depth': 7, 'min_data_in_leaf': 30, 'n_estimators': 300, 'num_leaves': 50}
-
+    
 # The best area under the ROC cure is: 0.8628911985195646
 # The optimal cutoff is 0.06901024161451128
-

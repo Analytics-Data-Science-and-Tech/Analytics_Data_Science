@@ -93,3 +93,8 @@ lightgbm_label_test = np.where(lightgbm_pred_test < opt_cutoff, 0, 1)
 ## Data-frame for submission
 data_out = pd.DataFrame({'Id': test_id, 'SeriousDlqin2yrs': lightgbm_label_test})
 data_out.to_csv('lightgbm_submission_md1.csv', index = False)
+
+# The best hyper-parameters are: {'feature_fraction': 0.8, 'lambda_l1': 0, 'lambda_l2': 10, 'learning_rate': 0.01, 'max_depth': 5, 'min_data_in_leaf': 15, 'n_estimators': 300, 'num_leaves': 20}
+
+# The best area under the ROC cure is: 0.9372299350114577
+# The optimal cutoff is 0.07624597608055335

@@ -54,6 +54,14 @@ LightGBM_param_grid = {'n_estimators': [300],
 ## Performing grid search with 5 folds
 LightGBM_grid_search = GridSearchCV(LGBMClassifier(), LightGBM_param_grid, cv = 5, scoring = 'accuracy', n_jobs = -1, verbose = 3).fit(X, Y)
 
+## Extracting best hyper-parameters
+best_params = LightGBM_grid_search.best_params_
+print('The best hyper-parameters are:', best_params)
+
+## Extracting the best score
+best_score = LightGBM_grid_search.best_score_
+print('The best area under the ROC cure is:', best_score)
+
 ## Extracting the best model
 LightGBM_md = LightGBM_grid_search.best_estimator_
 

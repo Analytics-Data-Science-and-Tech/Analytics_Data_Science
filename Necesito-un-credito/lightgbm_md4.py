@@ -94,8 +94,8 @@ lightgbm_label_test = np.where(lightgbm_pred_test < opt_cutoff, 0, 1)
 data_out = pd.DataFrame({'Id': test_id, 'SeriousDlqin2yrs': lightgbm_label_test})
 data_out.to_csv('lightgbm_submission_md4.csv', index = False)
 
-# The best hyper-parameters are: {'feature_fraction': 0.7, 'lambda_l1': 0, 'lambda_l2': 0, 'learning_rate': 0.01, 'max_depth': 7, 'min_data_in_leaf': 25, 'n_estimators': 300, 'num_leaves': 40}
+# The best hyper-parameters are: {'feature_fraction': 0.6, 'lambda_l1': 0, 'lambda_l2': 0, 'learning_rate': 0.01, 'max_depth': 7, 'min_data_in_leaf': 30, 'n_estimators': 300, 'num_leaves': 50}
 
-# The best area under the ROC cure is: 0.8623706443292573
-# The optimal cutoff is 0.073450757859664
+# The best area under the ROC cure is: 0.8628793227332838
+# The optimal cutoff is 0.07164245844633954
 

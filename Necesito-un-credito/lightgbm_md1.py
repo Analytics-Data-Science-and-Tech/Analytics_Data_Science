@@ -91,5 +91,5 @@ lightgbm_pred_test = LightGBM_md.predict_proba(test)[:, 1]
 lightgbm_label_test = np.where(lightgbm_pred_test < opt_cutoff, 0, 1)
 
 ## Data-frame for submission
-data_out = pd.DataFrame({'Id': test['Id'], 'SeriousDlqin2yrs': lightgbm_label_test})
+data_out = pd.DataFrame({'Id': test_id, 'SeriousDlqin2yrs': lightgbm_label_test})
 data_out.to_csv('lightgbm_submission_md1.csv', index = False)

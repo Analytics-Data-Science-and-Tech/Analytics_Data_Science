@@ -47,8 +47,8 @@ LightGBM_param_grid = {'n_estimators': [300],
                        'min_data_in_leaf': [15, 20],
                        'learning_rate': [0.01, 0.001],
                        'feature_fraction': [0.8, 1],
-                       'lambda_l1': [0, 10, 100],
-                       'lambda_l2': [0, 10, 100]
+                       'lambda_l1': [0, 10],
+                       'lambda_l2': [0, 10]
                       }
 
 ## Performing grid search with 5 folds

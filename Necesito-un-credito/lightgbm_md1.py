@@ -87,7 +87,7 @@ opt_cutoff = roc_auc_cutoff(Y, lightgbm_pred_train)
 print('The optimal cutoff is', opt_cutoff)
 
 ## Predicting on the test
-lightgbm_pred_test = LightGBM_md.predict_proba(test.drop(columns = ['Id'], axis = 1))[:, 1]
+lightgbm_pred_test = LightGBM_md.predict_proba(test)[:, 1]
 lightgbm_label_test = np.where(lightgbm_pred_test < opt_cutoff, 0, 1)
 
 ## Data-frame for submission

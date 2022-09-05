@@ -30,3 +30,11 @@ The goal of these competitions is to provide a fun and approachable-for-anyone t
 Forecasts aren’t just for meteorologists. Governments forecast economic growth. Scientists attempt to predict the future population. And businesses forecast product demand—a common task of professional data scientists. Forecasts are especially relevant to brick-and-mortar grocery stores, which must dance delicately with how much inventory to buy. Predict a little over, and grocers are stuck with overstocked, perishable goods. Guess a little under, and popular items quickly sell out, leading to lost revenue and upset customers. More accurate forecasting, thanks to machine learning, could help ensure retailers please customers by having just enough of the right products at the right time.
 
 Current subjective forecasting methods for retail have little data to back them up and are unlikely to be automated. The problem becomes even more complex as retailers add new locations with unique needs, new products, ever-transitioning seasonal tastes, and unpredictable product marketing. For more info see [here](https://www.kaggle.com/competitions/store-sales-time-series-forecasting/overview)
+
+## Necesito un credito
+
+Los bancos juegan un papel crucial en las economías de mercado. Ellos deciden quién puede ser financiado y en qué términos, así como hacer y deshacer grandes inversiones. Para que los mercados y las sociedades funcionen, tanto individuos como compañías necesitan acceso a créditos.
+
+Los algoritmos de credit scoring son los métodos que los bancos tienen para determinar si un préstamo debe ser concedido o no. Los participantes de esta competición deberán mejorar, mediante los últimos avances obtenidos en el área del Machine Learning, un sistema de credit scoring que sea capaz de predecir la probabilidad de que alguien sufra dificultades financieras en los próximos dos años.
+
+El objetivo de esta competición es crear un modelo que las instituciones de crédito puedan utilizar para tratar de tomar las mejores decisiones financieras posibles. For more info see [here](https://www.kaggle.com/competitions/necesito-un-crdito)

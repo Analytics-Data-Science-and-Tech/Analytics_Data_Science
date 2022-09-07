@@ -7,8 +7,8 @@ from lightgbm import LGBMClassifier
 train = pd.read_csv('train.csv')
 test = pd.read_csv('test.csv')
 
-test_id = test['Id']
-test = test.drop(columns = ['Id', 'text', 'reply_to_screen_name', 'hashtags'], axis = 1)
+# test_id = test['Id']
+# test = test.drop(columns = ['Id', 'text', 'reply_to_screen_name', 'hashtags'], axis = 1)
 
 ## Defining input and target
 X = train.drop(columns = ['text', 'reply_to_screen_name', 'hashtags', 'country'], axis = 1)
@@ -21,17 +21,17 @@ Y = np.where(Y == 'us', 0,
 
 ## Defining the hyper-parameter grid
 LightGBM_param_grid = {'n_estimators': [300],
-                       'max_depth': [5, 7],
-                       'num_leaves': [20, 30],
-                       'min_data_in_leaf': [15, 20],
-                       'learning_rate': [0.01, 0.001],
-                       'feature_fraction': [0.8, 1],
-                       'lambda_l1': [0, 10],
-                       'lambda_l2': [0, 10]
+                       'max_depth': [5],
+                       'num_leaves': [20],
+                       'min_data_in_leaf': [15],
+                       'learning_rate': [0.01],
+                       'feature_fraction': [0.8],
+                       'lambda_l1': [0],
+                       'lambda_l2': [0]
                       }
 
 ## Building the multi-classifier  
-one_vs_all_LightGBM = OneVsRestClassifier(estimator = LGBMClassifier(**LightGBM_param_grid)).fit(X, Y)
+one_vs_all_LightGBM = OneVsRestClassifier(estimator = LGBMClassifier(*LightGBM_param_grid)).fit(X, Y)
 
 ## Predicting on the test
 one_vs_all_LightGBM_pred = one_vs_all_RF.predict_proba(test)

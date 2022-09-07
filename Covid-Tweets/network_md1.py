@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.multiclass import OneVsRestClassifier
-from sklearn.ensemble import RandomForestClassifier
+import tensorflow as tf
+
 
 train = pd.read_csv('train.csv')
 test = pd.read_csv('test.csv')
@@ -38,7 +39,7 @@ model = tf.keras.models.Sequential([
 model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
 ## Fitting model 
-history = model.fit(X_train, tf.keras.utils.to_categorical(Y_train, num_classes = 6), epochs = 10, batch_size = 32, validation_data = (X_test, tf.keras.utils.to_categorical(Y_test, num_classes = 6)))
+model.fit(X_train, tf.keras.utils.to_categorical(Y_train, num_classes = 6), epochs = 10, batch_size = 32, validation_data = (X_test, tf.keras.utils.to_categorical(Y_test, num_classes = 6)))
 
 ## Predicting on test
 nn_pred = model.predict(test)

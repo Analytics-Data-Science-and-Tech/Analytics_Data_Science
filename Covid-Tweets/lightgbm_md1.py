@@ -7,6 +7,9 @@ from lightgbm import LGBMClassifier
 train = pd.read_csv('train.csv')
 test = pd.read_csv('test.csv')
 
+test_id = test['Id']
+test = test.drop(columns = ['Id', 'text', 'reply_to_screen_name', 'hashtags'], axis = 1)
+
 ## Defining input and target
 X = train.drop(columns = ['text', 'reply_to_screen_name', 'hashtags', 'country'], axis = 1)
 Y = train['country']

@@ -5,14 +5,20 @@ from sklearn.multiclass import OneVsRestClassifier
 import tensorflow as tf
 
 
-train = pd.read_csv('train.csv')
-test = pd.read_csv('test.csv')
+train = pd.read_csv('train_new.csv')
+test = pd.read_csv('test_new.csv')
+
+train = pd.read_csv('train_new.csv')
+train = train.fillna(0)
+
+test = pd.read_csv('test_new.csv')
+test = test.fillna(0)
 
 test_id = test['Id']
-test = test.drop(columns = ['Id', 'text', 'reply_to_screen_name', 'hashtags'], axis = 1)
+test = test.drop(columns = ['Id', 'text', 'reply_to_screen_name', 'hashtags', 'clean_tweet'], axis = 1)
 
 ## Defining input and target
-X = train.drop(columns = ['text', 'reply_to_screen_name', 'hashtags', 'country'], axis = 1)
+X = train.drop(columns = ['text', 'reply_to_screen_name', 'hashtags', 'clean_tweet', 'country'], axis = 1)
 Y = train['country']
 Y = np.where(Y == 'us', 0, 
              np.where(Y == 'uk', 1, 
@@ -39,7 +45,7 @@ model = tf.keras.models.Sequential([
 model.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
 ## Fitting model 
-model.fit(X_train, tf.keras.utils.to_categorical(Y_train, num_classes = 6), epochs = 10, batch_size = 32, validation_data = (X_test, tf.keras.utils.to_categorical(Y_test, num_classes = 6)))
+model.fit(X_train, tf.keras.utils.to_categorical(Y_train, num_classes = 6), epochs = 20, batch_size = 32, validation_data = (X_test, tf.keras.utils.to_categorical(Y_test, num_classes = 6)))
 
 ## Predicting on test
 nn_pred = model.predict(test)
@@ -52,4 +58,4 @@ data_out['Category'] = np.where(data_out['Category'] == 0, 'us',
                                          np.where(data_out['Category'] == 2, 'canada',
                                                   np.where(data_out['Category'] == 3, 'australia',
                                                            np.where(data_out['Category'] == 4, 'ireland', 'new_zealand')))))
-data_out.to_csv('nn_submission_md1.csv', index = False)
+data_out.to_csv('nn_submission_md1_1.csv', index = False)

@@ -4,11 +4,13 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.ensemble import RandomForestClassifier
 
-train = pd.read_csv('train.csv')
-test = pd.read_csv('test.csv')
+train = pd.read_csv('train_new.csv')
+test = pd.read_csv('test_new.csv')
+
+train = train.drop(columns = ['text', 'reply_to_screen_name', 'hashtags', 'clean_tweet'])
 
 test_id = test['Id']
-test = test.drop(columns = ['Id', 'text', 'reply_to_screen_name', 'hashtags'], axis = 1)
+test = test.drop(columns = ['Id', 'text', 'reply_to_screen_name', 'hashtags', 'clean_tweet'], axis = 1)
 
 ## Defining input and target
 X = train.drop(columns = ['text', 'reply_to_screen_name', 'hashtags', 'country'], axis = 1)

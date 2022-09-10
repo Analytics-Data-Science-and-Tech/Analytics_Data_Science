@@ -4,8 +4,8 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.multiclass import OneVsRestClassifier
 from lightgbm import LGBMClassifier
 
-train = pd.read_csv('train.csv')
-test = pd.read_csv('test.csv')
+train = pd.read_csv('train_new.csv')
+test = pd.read_csv('test_new.csv')
 
 train = pd.read_csv('train_new.csv')
 train = train.fillna(0)

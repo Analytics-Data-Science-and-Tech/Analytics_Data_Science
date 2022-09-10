@@ -65,3 +65,6 @@ data_out['Category'] = np.where(data_out['Category'] == 0, 'us',
 data_out.to_csv('LightGBM_submission_md2.csv', index = False)
 
 
+# The best hyper-parameters are: {'feature_fraction': 0.8, 'lambda_l1': 0, 'lambda_l2': 0, 'learning_rate': 0.01, 'max_depth': 7, 'min_data_in_leaf': 15, 'n_estimators': 300, 'num_leaves': 30}
+
+# The best accuracy is: 0.34821666666666673

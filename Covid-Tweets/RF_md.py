@@ -44,4 +44,4 @@ data_out['Category'] = np.where(data_out['Category'] == 0, 'us',
                                                   np.where(data_out['Category'] == 3, 'australia',
                                                            np.where(data_out['Category'] == 4, 'ireland', 'new_zealand')))))
 
-data_out.to_csv('RF_submission_5.csv', index = False)
+data_out.to_csv('RF_submission_6.csv', index = False)

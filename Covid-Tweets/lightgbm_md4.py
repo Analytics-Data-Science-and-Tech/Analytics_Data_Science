@@ -23,7 +23,7 @@ Y = np.where(Y == 'us', 0,
                                         np.where(Y == 'ireland', 4, 5)))))
 
 ## Defining the hyper-parameter grid
-LightGBM_param_grid = {'estimator__n_estimators': [300],
+LightGBM_param_grid = {'estimator__n_estimators': [200],
                        'estimator__max_depth': [5, 7],
                        'estimator__num_leaves': [20, 30],
                        'estimator__min_data_in_leaf': [15, 20],

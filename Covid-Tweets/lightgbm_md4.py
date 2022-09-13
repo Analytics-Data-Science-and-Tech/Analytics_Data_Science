@@ -4,10 +4,10 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.multiclass import OneVsRestClassifier
 from lightgbm import LGBMClassifier
 
-train = pd.read_csv('train_new_2.csv')
+train = pd.read_csv('train_new_3.csv')
 train = train.fillna(0)
 
-test = pd.read_csv('test_new_2.csv')
+test = pd.read_csv('test_new_3.csv')
 test = test.fillna(0)
 
 test_id = test['Id']
@@ -29,8 +29,8 @@ LightGBM_param_grid = {'estimator__n_estimators': [300],
                        'estimator__min_data_in_leaf': [15, 20],
                        'estimator__learning_rate': [0.01, 0.001],
                        'estimator__feature_fraction': [0.8, 1],
-                       'estimator__lambda_l1': [0, 10],
-                       'estimator__lambda_l2': [0, 10]
+                       'estimator__lambda_l1': [0],
+                       'estimator__lambda_l2': [0]
                       }
 
 ## Performing grid search with 5 folds

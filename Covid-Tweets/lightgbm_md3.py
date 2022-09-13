@@ -5,12 +5,9 @@ from sklearn.multiclass import OneVsRestClassifier
 from lightgbm import LGBMClassifier
 
 train = pd.read_csv('train_new_2.csv')
-test = pd.read_csv('test_new_2.csv')
-
-train = pd.read_csv('train_new.csv')
 train = train.fillna(0)
 
-test = pd.read_csv('test_new.csv')
+test = pd.read_csv('test_new_2.csv')
 test = test.fillna(0)
 
 test_id = test['Id']

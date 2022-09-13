@@ -4,10 +4,10 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.multiclass import OneVsRestClassifier
 from lightgbm import LGBMClassifier
 
-train = pd.read_csv('train_new_2.csv')
+train = pd.read_csv('train_new_3.csv')
 train = train.fillna(0)
 
-test = pd.read_csv('test_new_2.csv')
+test = pd.read_csv('test_new_3.csv')
 test = test.fillna(0)
 
 test_id = test['Id']
@@ -23,14 +23,14 @@ Y = np.where(Y == 'us', 0,
                                         np.where(Y == 'ireland', 4, 5)))))
 
 ## Defining the hyper-parameter grid
-LightGBM_param_grid = {'estimator__n_estimators': [300],
+LightGBM_param_grid = {'estimator__n_estimators': [200],
                        'estimator__max_depth': [5, 7],
                        'estimator__num_leaves': [20, 30],
                        'estimator__min_data_in_leaf': [15, 20],
                        'estimator__learning_rate': [0.01, 0.001],
                        'estimator__feature_fraction': [0.8, 1],
-                       'estimator__lambda_l1': [0, 10],
-                       'estimator__lambda_l2': [0, 10]
+                       'estimator__lambda_l1': [0],
+                       'estimator__lambda_l2': [0]
                       }
 
 ## Performing grid search with 5 folds
@@ -61,3 +61,7 @@ data_out['Category'] = np.where(data_out['Category'] == 0, 'us',
                                                            np.where(data_out['Category'] == 4, 'ireland', 'new_zealand')))))
 
 data_out.to_csv('LightGBM_submission_md4.csv', index = False)
+
+# The best hyper-parameters are: {'estimator__feature_fraction': 0.8, 'estimator__lambda_l1': 0, 'estimator__lambda_l2': 0, 'estimator__learning_rate': 0.01, 'estimator__max_depth': 7, 'estimator__min_data_in_leaf': 15, 'estimator__n_estimators': 200, 'estimator__num_leaves': 30}
+
+# The best accuracy is: 0.3850458333333333

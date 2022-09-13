@@ -4,10 +4,10 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.ensemble import RandomForestClassifier
 
-train = pd.read_csv('train_new.csv')
+train = pd.read_csv('train_new_2.csv')
 train = train.fillna(0)
 
-test = pd.read_csv('test_new.csv')
+test = pd.read_csv('test_new_2.csv')
 test = test.fillna(0)
 
 test_id = test['Id']

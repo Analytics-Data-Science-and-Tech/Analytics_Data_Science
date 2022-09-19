@@ -4,6 +4,14 @@ import numpy as np
 import holidays
 
 
+def smape(y_true, y_pred):
+    
+    smape = abs(y_true - y_pred) / (abs(y_true) + abs(y_pred))
+    smape = smape.mean() * 200
+    
+    return smape
+
+
 def is_holiday(train, test):
     
     ## Extracting holidays
@@ -21,52 +29,54 @@ def is_holiday(train, test):
     for i in range(0, len(countries)):
     
         train_temp = train[train['country'] == countries[i]].reset_index(drop = True)
+        train_temp['is_holiday'] = np.nan
         train_temp['holiday_season'] = np.nan
      
         test_temp = test[test['country'] == countries[i]].reset_index(drop = True)
+        test_temp['is_holiday'] = np.nan
         test_temp['holiday_season'] = np.nan
         
         if (i == 0):
         
-        holiday_to_use = be_holidays
+            holiday_to_use = be_holidays
         
-    elif (i == 1):
-        
-        holiday_to_use = fr_holidays
-        
-    elif (i == 2):
-        
-        holiday_to_use = de_holidays
-        
-    elif (i == 3):
-        
-        holiday_to_use = it_holidays
-        
-    elif (i == 4):
-        
-        holiday_to_use = pl_holidays
-        
-    else:
-        
-        holiday_to_use = es_holidays
+        elif (i == 1):
+
+            holiday_to_use = fr_holidays
+
+        elif (i == 2):
+
+            holiday_to_use = de_holidays
+
+        elif (i == 3):
+
+            holiday_to_use = it_holidays
+
+        elif (i == 4):
+
+            holiday_to_use = pl_holidays
+
+        else:
+
+            holiday_to_use = es_holidays
     
     for j in range(0, train_temp.shape[0]):
         
         train_temp['is_holiday'][j] = np.where(train_temp['date'][j] in holiday_to_use, 1, 0)
         
-        if ((train_temp['date'][j] >= pd.to_datetime('2017-12-08')) & (train_temp['date'][j] <= pd.to_datetime('2017-12-31'))):
+        if ((train_temp['date'][j] >= pd.to_datetime('2017-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2017-12-31'))):
             
             train_temp['holiday_season'][j] = 1
             
-        elif ((train_temp['date'][j] >= pd.to_datetime('2018-12-08')) & (train_temp['date'][j] <= pd.to_datetime('2018-12-31'))):    
+        elif ((train_temp['date'][j] >= pd.to_datetime('2018-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2018-12-31'))):    
             
             train_temp['holiday_season'][j] = 1
               
-        elif ((train_temp['date'][j] >= pd.to_datetime('2019-12-08')) & (train_temp['date'][j] <= pd.to_datetime('2019-12-31'))):      
+        elif ((train_temp['date'][j] >= pd.to_datetime('2019-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2019-12-31'))):      
             
             train_temp['holiday_season'][j] = 1
        
-        elif ((train_temp['date'][j] >= pd.to_datetime('2020-12-08')) & (train_temp['date'][j] <= pd.to_datetime('2020-12-31'))):
+        elif ((train_temp['date'][j] >= pd.to_datetime('2020-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2020-12-31'))):
             
             train_temp['holiday_season'][j] = 1
         
@@ -80,19 +90,19 @@ def is_holiday(train, test):
         
         test_temp['is_holiday'][k] = np.where(test_temp['date'][k] in holiday_to_use, 1, 0)
         
-        if ((test_temp['date'][k] >= pd.to_datetime('2017-12-08')) & (test_temp['date'][k] <= pd.to_datetime('2017-12-31'))):
+        if ((test_temp['date'][k] >= pd.to_datetime('2017-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2017-12-31'))):
             
             test_temp['holiday_season'][j] = 1
             
-        elif ((test_temp['date'][k] >= pd.to_datetime('2018-12-08')) & (test_temp['date'][k] <= pd.to_datetime('2018-12-31'))):    
+        elif ((test_temp['date'][k] >= pd.to_datetime('2018-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2018-12-31'))):    
             
             test_temp['holiday_season'][j] = 1
               
-        elif ((test_temp['date'][k] >= pd.to_datetime('2019-12-08')) & (test_temp['date'][k] <= pd.to_datetime('2019-12-31'))):      
+        elif ((test_temp['date'][k] >= pd.to_datetime('2019-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2019-12-31'))):      
             
             test_temp['holiday_season'][j] = 1
        
-        elif ((test_temp['date'][k] >= pd.to_datetime('2020-12-08')) & (test_temp['date'][k] <= pd.to_datetime('2020-12-31'))):
+        elif ((test_temp['date'][k] >= pd.to_datetime('2020-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2020-12-31'))):
             
             test_temp['holiday_season'][k] = 1
         

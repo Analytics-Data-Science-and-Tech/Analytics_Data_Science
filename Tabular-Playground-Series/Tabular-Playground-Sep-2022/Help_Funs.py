@@ -60,57 +60,57 @@ def is_holiday(train, test):
 
             holiday_to_use = es_holidays
     
-        for j in range(0, train_temp.shape[0]):
-        
-            train_temp['is_holiday'][j] = np.where(train_temp['date'][j] in holiday_to_use, 1, 0)
+            for j in range(0, train_temp.shape[0]):
 
-            if ((train_temp['date'][j] >= pd.to_datetime('2017-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2017-12-31'))):
+                train_temp['is_holiday'][j] = np.where(train_temp['date'][j] in holiday_to_use, 1, 0)
 
-                train_temp['holiday_season'][j] = 1
+                if ((train_temp['date'][j] >= pd.to_datetime('2017-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2017-12-31'))):
 
-            elif ((train_temp['date'][j] >= pd.to_datetime('2018-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2018-12-31'))):    
+                    train_temp['holiday_season'][j] = 1
 
-                train_temp['holiday_season'][j] = 1
+                elif ((train_temp['date'][j] >= pd.to_datetime('2018-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2018-12-31'))):    
 
-            elif ((train_temp['date'][j] >= pd.to_datetime('2019-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2019-12-31'))):      
+                    train_temp['holiday_season'][j] = 1
 
-                train_temp['holiday_season'][j] = 1
+                elif ((train_temp['date'][j] >= pd.to_datetime('2019-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2019-12-31'))):      
 
-            elif ((train_temp['date'][j] >= pd.to_datetime('2020-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2020-12-31'))):
+                    train_temp['holiday_season'][j] = 1
 
-                train_temp['holiday_season'][j] = 1
+                elif ((train_temp['date'][j] >= pd.to_datetime('2020-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2020-12-31'))):
 
-            else:
+                    train_temp['holiday_season'][j] = 1
 
-                train_temp['holiday_season'][j] = 0
+                else:
 
-        train_list.append(train_temp)
+                    train_temp['holiday_season'][j] = 0
+
+            train_list.append(train_temp)
     
-        for k in range(0, test_temp.shape[0]):
+            for k in range(0, test_temp.shape[0]):
 
-            test_temp['is_holiday'][k] = np.where(test_temp['date'][k] in holiday_to_use, 1, 0)
+                test_temp['is_holiday'][k] = np.where(test_temp['date'][k] in holiday_to_use, 1, 0)
 
-            if ((test_temp['date'][k] >= pd.to_datetime('2017-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2017-12-31'))):
+                if ((test_temp['date'][k] >= pd.to_datetime('2017-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2017-12-31'))):
 
-                test_temp['holiday_season'][j] = 1
+                    test_temp['holiday_season'][j] = 1
 
-            elif ((test_temp['date'][k] >= pd.to_datetime('2018-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2018-12-31'))):    
+                elif ((test_temp['date'][k] >= pd.to_datetime('2018-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2018-12-31'))):    
 
-                test_temp['holiday_season'][j] = 1
+                    test_temp['holiday_season'][j] = 1
 
-            elif ((test_temp['date'][k] >= pd.to_datetime('2019-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2019-12-31'))):      
+                elif ((test_temp['date'][k] >= pd.to_datetime('2019-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2019-12-31'))):      
 
-                test_temp['holiday_season'][j] = 1
+                    test_temp['holiday_season'][j] = 1
 
-            elif ((test_temp['date'][k] >= pd.to_datetime('2020-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2020-12-31'))):
+                elif ((test_temp['date'][k] >= pd.to_datetime('2020-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2020-12-31'))):
 
-                test_temp['holiday_season'][k] = 1
+                    test_temp['holiday_season'][k] = 1
 
-            else:
+                else:
 
-                test_temp['holiday_season'][k] = 0
+                    test_temp['holiday_season'][k] = 0
 
-        test_list.append(test_temp)
+            test_list.append(test_temp)
     
     ## Putting train and test in the right format
     train = pd.concat(train_list)

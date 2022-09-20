@@ -25,16 +25,21 @@ def is_holiday(train, test):
     train_list = list()
     test_list = list()
     countries = ['Belgium', 'France', 'Germany', 'Italy', 'Poland', 'Spain']
+#     black_fridays = [pd.to_datetime('2017-11-24'), pd.to_datetime('2018-11-23'), pd.to_datetime('2019-11-29'), pd.to_datetime('2020-11-27'), pd.to_datetime('2021-11-26')]
 
     for i in range(0, len(countries)):
     
         train_temp = train[train['country'] == countries[i]].reset_index(drop = True)
         train_temp['is_holiday'] = np.nan
         train_temp['holiday_season'] = np.nan
+        train_temp['mother_day'] = np.nan
+        train_temp['black_friday_cyber_monday'] = np.nan
      
         test_temp = test[test['country'] == countries[i]].reset_index(drop = True)
         test_temp['is_holiday'] = np.nan
         test_temp['holiday_season'] = np.nan
+        test_temp['mother_day'] = np.nan
+        test_temp['black_friday_cyber_monday'] = np.nan
         
         if (i == 0):
         
@@ -63,7 +68,33 @@ def is_holiday(train, test):
         for j in range(0, train_temp.shape[0]):
 
             train_temp['is_holiday'][j] = np.where(train_temp['date'][j] in holiday_to_use, 1, 0)
+#             if (train_temp['date'][j] == pd.to_datetime('2017-05-14')):
+                
+#                 train_temp['mother_day'][j] = 1
+                
+#             elif (train_temp['date'][j] == pd.to_datetime('2018-05-14'))
+            
+            if ((train_temp['date'][j] >= pd.to_datetime('2017-11-23')) & (train_temp['date'][j] <= pd.to_datetime('2017-11-27'))):
 
+                train_temp['black_friday_cyber_monday'][j] = 1
+
+            elif ((train_temp['date'][j] >= pd.to_datetime('2018-11-22')) & (train_temp['date'][j] <= pd.to_datetime('2018-11-26'))):    
+
+                train_temp['black_friday_cyber_monday'][j] = 1
+
+            elif ((train_temp['date'][j] >= pd.to_datetime('2019-11-28')) & (train_temp['date'][j] <= pd.to_datetime('2019-12-02'))):      
+
+                train_temp['black_friday_cyber_monday'][j] = 1
+
+            elif ((train_temp['date'][j] >= pd.to_datetime('2020-11-26')) & (train_temp['date'][j] <= pd.to_datetime('2020-11-30'))):
+
+                train_temp['black_friday_cyber_monday'][j] = 1
+
+            else:
+
+                train_temp['black_friday_cyber_monday'][j] = 0
+            
+            
             if ((train_temp['date'][j] >= pd.to_datetime('2017-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2017-12-31'))):
 
                 train_temp['holiday_season'][j] = 1
@@ -89,20 +120,17 @@ def is_holiday(train, test):
         for k in range(0, test_temp.shape[0]):
 
             test_temp['is_holiday'][k] = np.where(test_temp['date'][k] in holiday_to_use, 1, 0)
+            
+            if ((test_temp['date'][k] >= pd.to_datetime('2021-11-25')) & (test_temp['date'][k] <= pd.to_datetime('2021-11-29'))):
 
-            if ((test_temp['date'][k] >= pd.to_datetime('2017-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2017-12-31'))):
+                test_temp['black_friday_cyber_monday'][k] = 1
 
-                test_temp['holiday_season'][j] = 1
+            else:
 
-            elif ((test_temp['date'][k] >= pd.to_datetime('2018-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2018-12-31'))):    
-
-                test_temp['holiday_season'][j] = 1
-
-            elif ((test_temp['date'][k] >= pd.to_datetime('2019-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2019-12-31'))):      
-
-                test_temp['holiday_season'][j] = 1
-
-            elif ((test_temp['date'][k] >= pd.to_datetime('2020-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2020-12-31'))):
+                test_temp['black_friday_cyber_monday'][k] = 0
+            
+            
+            if ((test_temp['date'][k] >= pd.to_datetime('2021-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2021-12-31'))):
 
                 test_temp['holiday_season'][k] = 1
 
@@ -116,9 +144,11 @@ def is_holiday(train, test):
     train = pd.concat(train_list)
     train['is_holiday'] = train['is_holiday'].astype(int)
     train['holiday_season'] = train['holiday_season'].astype(int)
+    train['black_friday_cyber_monday'] = train['black_friday_cyber_monday'].astype(int)
 
     test = pd.concat(test_list)
     test['is_holiday'] = test['is_holiday'].astype(int)
-    test['holiday_season'] = test['holiday_season'].astype(int)    
+    test['holiday_season'] = test['holiday_season'].astype(int) 
+    test['black_friday_cyber_monday'] = test['black_friday_cyber_monday'].astype(int)
     
     return [train, test]

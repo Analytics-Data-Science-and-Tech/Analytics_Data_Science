@@ -32,11 +32,13 @@ def is_holiday(train, test):
         train_temp = train[train['country'] == countries[i]].reset_index(drop = True)
         train_temp['is_holiday'] = np.nan
         train_temp['holiday_season'] = np.nan
+        train_temp['mother_day'] = np.nan
         train_temp['black_friday_cyber_monday'] = np.nan
      
         test_temp = test[test['country'] == countries[i]].reset_index(drop = True)
         test_temp['is_holiday'] = np.nan
         test_temp['holiday_season'] = np.nan
+        test_temp['mother_day'] = np.nan
         test_temp['black_friday_cyber_monday'] = np.nan
         
         if (i == 0):
@@ -66,6 +68,11 @@ def is_holiday(train, test):
         for j in range(0, train_temp.shape[0]):
 
             train_temp['is_holiday'][j] = np.where(train_temp['date'][j] in holiday_to_use, 1, 0)
+#             if (train_temp['date'][j] == pd.to_datetime('2017-05-14')):
+                
+#                 train_temp['mother_day'][j] = 1
+                
+#             elif (train_temp['date'][j] == pd.to_datetime('2018-05-14'))
             
             if ((train_temp['date'][j] >= pd.to_datetime('2017-11-23')) & (train_temp['date'][j] <= pd.to_datetime('2017-11-27'))):
 

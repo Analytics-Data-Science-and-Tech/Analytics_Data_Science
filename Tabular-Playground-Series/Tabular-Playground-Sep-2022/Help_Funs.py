@@ -25,16 +25,19 @@ def is_holiday(train, test):
     train_list = list()
     test_list = list()
     countries = ['Belgium', 'France', 'Germany', 'Italy', 'Poland', 'Spain']
+    black_fridays = [pd.to_datetime('2017-11-23'), pd.to_datetime('2018-11-22'), pd.to_datetime('2019-11-28'), pd.to_datetime('2020-11-26'), pd.to_datetime('2021-11-25')]
 
     for i in range(0, len(countries)):
     
         train_temp = train[train['country'] == countries[i]].reset_index(drop = True)
         train_temp['is_holiday'] = np.nan
         train_temp['holiday_season'] = np.nan
+        train_temp['black_friday'] = 0
      
         test_temp = test[test['country'] == countries[i]].reset_index(drop = True)
         test_temp['is_holiday'] = np.nan
         test_temp['holiday_season'] = np.nan
+        test_temp['black_friday'] = 0
         
         if (i == 0):
         
@@ -63,7 +66,12 @@ def is_holiday(train, test):
         for j in range(0, train_temp.shape[0]):
 
             train_temp['is_holiday'][j] = np.where(train_temp['date'][j] in holiday_to_use, 1, 0)
-
+            
+            if (np.isin(train_temp['date'][j], black_fridays)):
+                
+                train_temp['black_friday'] = 1
+            
+            
             if ((train_temp['date'][j] >= pd.to_datetime('2017-12-01')) & (train_temp['date'][j] <= pd.to_datetime('2017-12-31'))):
 
                 train_temp['holiday_season'][j] = 1
@@ -90,6 +98,10 @@ def is_holiday(train, test):
 
             test_temp['is_holiday'][k] = np.where(test_temp['date'][k] in holiday_to_use, 1, 0)
 
+            if (np.isin(test_temp['date'][k], black_fridays)):
+                
+                test_temp['black_friday'] = 1
+            
             if ((test_temp['date'][k] >= pd.to_datetime('2017-12-01')) & (test_temp['date'][k] <= pd.to_datetime('2017-12-31'))):
 
                 test_temp['holiday_season'][j] = 1

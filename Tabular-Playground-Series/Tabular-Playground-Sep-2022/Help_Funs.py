@@ -137,9 +137,11 @@ def is_holiday(train, test):
     train = pd.concat(train_list)
     train['is_holiday'] = train['is_holiday'].astype(int)
     train['holiday_season'] = train['holiday_season'].astype(int)
+    train['black_friday_cyber_monday'] = train['black_friday_cyber_monday'].astype(int)
 
     test = pd.concat(test_list)
     test['is_holiday'] = test['is_holiday'].astype(int)
-    test['holiday_season'] = test['holiday_season'].astype(int)    
+    test['holiday_season'] = test['holiday_season'].astype(int) 
+    test['black_friday_cyber_monday'] = test['black_friday_cyber_monday'].astype(int)
     
     return [train, test]

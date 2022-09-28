@@ -164,5 +164,10 @@ for train_index, test_index in kf.split(X, Y, groups = X.year):
     fold +=1
 
 t2 = time.time()
-print("LGBM model with cross validation take : {:.3f} sn.".format(t2-t1))
+print("LGBM model with cross validation take : {:.3f} sn.".format(t2-t1), '\n')
 
+mean = sum(score_list_lgb) / len(score_list_lgb)
+variance = sum([((x - mean) ** 2) for x in score_list_lgb]) / len(score_list_lgb)
+res = variance ** 0.5
+print("Cross validation mean score:", sum(score_list_lgb) / len(score_list_lgb), '\n')
+print("Cross validation score's Standart deviation is:", res)

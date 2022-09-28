@@ -126,13 +126,13 @@ Y = train['sales']
 test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
-kf = GroupKFold(n_splits = 5)
-# kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
+# kf = GroupKFold(n_splits = 5)
+kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
 score_list_lgb = []
 test_preds_lgb = []
 fold = 1
 
-for train_index, test_index in kf.split(X, Y, groups = X.year):
+for train_index, test_index in kf.split(X, Y):
     
     ## Splitting the data
     X_train , X_val = X.iloc[train_index], X.iloc[test_index]  
@@ -144,7 +144,7 @@ for train_index, test_index in kf.split(X, Y, groups = X.year):
     model_lgb = LGBMRegressor(n_estimators = 5000, 
                               learning_rate = 0.01,
                               num_leaves = 40,
-                              max_depth = 9, 
+                              max_depth = 11, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
                               bagging_fraction = 0.95, 

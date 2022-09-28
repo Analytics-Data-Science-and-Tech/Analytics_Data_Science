@@ -160,23 +160,28 @@ for train_index, test_index in kf.split(X, Y):
     score = np.sqrt(mean_squared_log_error(Y_val, result))
     print('Fold ', str(fold), ' result is:', score, '\n')
     score_list_lgb.append(score)
-
-    test_preds_lgb.append(model_lgb.predict(test))
-    fold +=1
+    
+    test_preds = model_lgb.predict(test)
+    test_preds = np.where(test_preds < 0, 0, test_preds)
+    test_preds_lgb.append(test_preds)
+    fold = fold + 1
 
 t2 = time.time()
+print('-- Model Summary Results --', '\n')
 print("LGBM model with cross validation take : {:.3f} sn.".format(t2-t1), '\n')
 
 mean = sum(score_list_lgb) / len(score_list_lgb)
 variance = sum([((x - mean) ** 2) for x in score_list_lgb]) / len(score_list_lgb)
 res = variance ** 0.5
+
 print("Cross validation mean score:", sum(score_list_lgb) / len(score_list_lgb), '\n')
 print("Cross validation score's Standart deviation is:", res, '\n')
 
-print('--Agregating predictions--')
 test_preds_lgb = pd.DataFrame(test_preds_lgb)
 test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
-print('--Appending predictions--')
-test_ids['sales'] = test_preds_lgb
-test_ids.to_csv('Cluster_1.csv', index = False)
+data_out = pd.DataFrame({'id': test_ids})
+data_out['sales'] = test_preds_lgb
+data_out.to_csv('Cluster_1.csv', index = False)
+
+print('-- Process Finished --')

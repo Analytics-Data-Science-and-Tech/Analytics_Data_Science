@@ -123,6 +123,7 @@ test = test[test['cluster_1'] == 1].reset_index(drop = True)
 X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
 
+test_ids = test['id']
 test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
@@ -170,4 +171,12 @@ mean = sum(score_list_lgb) / len(score_list_lgb)
 variance = sum([((x - mean) ** 2) for x in score_list_lgb]) / len(score_list_lgb)
 res = variance ** 0.5
 print("Cross validation mean score:", sum(score_list_lgb) / len(score_list_lgb), '\n')
-print("Cross validation score's Standart deviation is:", res)
+print("Cross validation score's Standart deviation is:", res, '\n')
+
+print('--Agregating predictions--')
+test_preds_lgb = pd.DataFrame(test_preds_lgb)
+test_preds_lgb = test_preds_lgb.mean(axis = 0)
+
+print('--Appending predictions--')
+test_ids['sales'] = test_preds_lgb
+test_ids.to_csv('Cluster_1.csv', index = False)

@@ -127,13 +127,13 @@ test_ids = test['id']
 test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
-# kf = GroupKFold(n_splits = 5)
-kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
+kf = GroupKFold(n_splits = 5)
+# kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
 score_list_lgb = []
 test_preds_lgb = []
 fold = 1
 
-for train_index, test_index in kf.split(X, Y):
+for train_index, test_index in kf.split(X, Y, groups = X.year):
     
     ## Splitting the data
     X_train , X_val = X.iloc[train_index], X.iloc[test_index]  
@@ -185,3 +185,10 @@ data_out['sales'] = test_preds_lgb
 data_out.to_csv('Cluster_1.csv', index = False)
 
 print('-- Process Finished --')
+
+
+Fold  1  result is: 1.2971367513146221
+Fold  2  result is: 2.650482587624571
+Fold  3  result is: 2.8663261676797163
+Fold  4  result is: 2.3614756799501704
+Fold  5  result is: 0.81909146997564    

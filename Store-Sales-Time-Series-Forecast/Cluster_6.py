@@ -133,8 +133,8 @@ score_list_lgb = []
 test_preds_lgb = []
 fold = 1
 
-# for train_index, test_index in kf.split(X, Y, groups = X.year):
-for train_index, test_index in kf.split(X, Y):
+for train_index, test_index in kf.split(X, Y, groups = X.year):
+# for train_index, test_index in kf.split(X, Y):
     
     ## Splitting the data
     X_train , X_val = X.iloc[train_index], X.iloc[test_index]  
@@ -193,3 +193,11 @@ print('-- Process Finished --')
 # Fold  4  result is: 1.9256527145979334
 # Fold  5  result is: 1.9113793565281076
 # Cross validation mean score: 1.9111691578739265
+
+# Fold  1  result is: 1.3317849326940367
+# Fold  2  result is: 2.41538307030845
+# Fold  3  result is: 2.680477805591617
+# Fold  4  result is: 1.8849827413472138
+# Fold  5  result is: 1.0293048630837314
+# Cross validation mean score: 1.86838668260501
+    

@@ -117,8 +117,8 @@ test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 ## Cluster 1 ##
 ###############
 
-train = train[train['cluster_2'] == 1].reset_index(drop = True)
-test = test[test['cluster_2'] == 1].reset_index(drop = True)
+train = train[train['cluster_4'] == 1].reset_index(drop = True)
+test = test[test['cluster_4'] == 1].reset_index(drop = True)
 
 X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
@@ -146,7 +146,7 @@ for train_index, test_index in kf.split(X, Y):
     model_lgb = LGBMRegressor(n_estimators = 5000, 
                               learning_rate = 0.01,
                               num_leaves = 40,
-                              max_depth = 17, 
+                              max_depth = 11, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
                               bagging_fraction = 0.95, 
@@ -183,31 +183,13 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-data_out.to_csv('Cluster_2.csv', index = False)
+data_out.to_csv('Cluster_4.csv', index = False)
 
 print('-- Process Finished --')
 
-
-# Fold  1  result is: 1.2971367513146221
-# Fold  2  result is: 2.650482587624571
-# Fold  3  result is: 2.8663261676797163
-# Fold  4  result is: 2.3614756799501704
-# Fold  5  result is: 0.81909146997564    
-
-
-# Fold  1  result is: 1.2797726244278311
-# Fold  2  result is: 2.6474861583117235
-# Fold  3  result is: 2.879199994129964
-# Fold  4  result is: 2.36851759308211
-# Fold  5  result is: 0.8760788206193346
-# Cross validation mean score: 2.0102110381141927
-
-# Fold  1  result is: 2.021736833299197
-# Fold  2  result is: 2.0284962364683183
-# Fold  3  result is: 2.0669372994143127
-# Fold  4  result is: 2.0468396520114687
-# Fold  5  result is: 2.058221019617562
-# Cross validation mean score: 2.0444462081621717
-
-    
-    
+# Fold  1  result is: 1.1021472858378174
+# Fold  2  result is: 1.0966974788184327
+# Fold  3  result is: 1.1033820909059038
+# Fold  4  result is: 1.0846634919796836
+# Fold  5  result is: 1.0926907990180663
+# Cross validation mean score: 1.0959162293119806

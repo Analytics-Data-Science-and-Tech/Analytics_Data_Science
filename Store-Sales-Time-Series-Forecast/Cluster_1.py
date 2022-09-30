@@ -145,7 +145,7 @@ for train_index, test_index in kf.split(X, Y):
     model_lgb = LGBMRegressor(n_estimators = 5000, 
                               learning_rate = 0.01,
                               num_leaves = 40,
-                              max_depth = 11, 
+                              max_depth = 15, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
                               bagging_fraction = 0.95, 

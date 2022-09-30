@@ -86,7 +86,7 @@ train = pd.concat([train.drop(columns = ['family'], axis = 1), family_dummies], 
 
 train['day'] = train['date'].dt.dayofweek
 train['month'] = train['date'].dt.month
-# train['year'] = train['date'].dt.year
+train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
 
 ##################
@@ -110,7 +110,7 @@ test = pd.concat([test.drop(columns = ['family'], axis = 1), family_dummies], ax
 
 test['day'] = test['date'].dt.dayofweek
 test['month'] = test['date'].dt.month
-# test['year'] = test['date'].dt.year
+test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
 ###############
@@ -127,8 +127,8 @@ test_ids = test['id']
 test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
-# kf = GroupKFold(n_splits = 5)
-kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
+kf = GroupKFold(n_splits = 5)
+# kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
 score_list_lgb = []
 test_preds_lgb = []
 fold = 1
@@ -149,8 +149,8 @@ for train_index, test_index in kf.split(X, Y):
                               max_depth = 17, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
-                              bagging_fraction = 0.95, 
-                              feature_fraction = 0.96)
+                              bagging_fraction = 0.8, 
+                              feature_fraction = 0.8)
 
     model = model_lgb.fit(X_train, Y_train)
     result = model_lgb.predict(X_val)
@@ -187,3 +187,9 @@ data_out.to_csv('Cluster_6.csv', index = False)
 
 print('-- Process Finished --')
 
+# Fold  1  result is: 1.9025728880211512
+# Fold  2  result is: 1.9124798783045247
+# Fold  3  result is: 1.9037609519179162
+# Fold  4  result is: 1.9256527145979334
+# Fold  5  result is: 1.9113793565281076
+# Cross validation mean score: 1.9111691578739265

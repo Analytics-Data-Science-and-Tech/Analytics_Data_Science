@@ -86,7 +86,7 @@ train = pd.concat([train.drop(columns = ['family'], axis = 1), family_dummies], 
 
 train['day'] = train['date'].dt.dayofweek
 train['month'] = train['date'].dt.month
-# train['year'] = train['date'].dt.year
+train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
 
 ##################
@@ -110,15 +110,15 @@ test = pd.concat([test.drop(columns = ['family'], axis = 1), family_dummies], ax
 
 test['day'] = test['date'].dt.dayofweek
 test['month'] = test['date'].dt.month
-# test['year'] = test['date'].dt.year
+test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
 ###############
 ## Cluster 1 ##
 ###############
 
-train = train[train['cluster_5'] == 1].reset_index(drop = True)
-test = test[test['cluster_5'] == 1].reset_index(drop = True)
+train = train[train['cluster_7'] == 1].reset_index(drop = True)
+test = test[test['cluster_7'] == 1].reset_index(drop = True)
 
 X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
@@ -149,8 +149,8 @@ for train_index, test_index in kf.split(X, Y):
                               max_depth = 17, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
-                              bagging_fraction = 0.95, 
-                              feature_fraction = 0.96)
+                              bagging_fraction = 0.9, 
+                              feature_fraction = 0.9)
 
     model = model_lgb.fit(X_train, Y_train)
     result = model_lgb.predict(X_val)
@@ -183,13 +183,13 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-data_out.to_csv('Cluster_5.csv', index = False)
+data_out.to_csv('Cluster_7.csv', index = False)
 
 print('-- Process Finished --')
 
-# Fold  1  result is: 1.4631801332288406
-# Fold  2  result is: 1.4326458395144308
-# Fold  3  result is: 1.4957109517266074
-# Fold  4  result is: 1.4858328128147882
-# Fold  5  result is: 1.4662824595638824
-# Cross validation mean score: 1.4687304393697098
+# Fold  1  result is: 1.9062634056793981
+# Fold  2  result is: 1.8854300229785632
+# Fold  3  result is: 1.9126854440550947
+# Fold  4  result is: 1.9189369406003038
+# Fold  5  result is: 1.906036170518161
+# Cross validation mean score: 1.9058703967663042    

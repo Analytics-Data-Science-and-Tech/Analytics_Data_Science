@@ -86,7 +86,7 @@ train = pd.concat([train.drop(columns = ['family'], axis = 1), family_dummies], 
 
 train['day'] = train['date'].dt.dayofweek
 train['month'] = train['date'].dt.month
-train['year'] = train['date'].dt.year
+# train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
 
 ##################
@@ -110,7 +110,7 @@ test = pd.concat([test.drop(columns = ['family'], axis = 1), family_dummies], ax
 
 test['day'] = test['date'].dt.dayofweek
 test['month'] = test['date'].dt.month
-test['year'] = test['date'].dt.year
+# test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
 ###############
@@ -187,3 +187,9 @@ data_out.to_csv('Cluster_11.csv', index = False)
 
 print('-- Process Finished --')
 
+# Fold  1  result is: 2.657795752834132
+# Fold  2  result is: 2.661710277368256
+# Fold  3  result is: 2.6518723761148975    
+# Fold  4  result is: 2.671256620329389
+# Fold  5  result is: 2.646525825368953
+# Cross validation mean score: 2.6578321704031254

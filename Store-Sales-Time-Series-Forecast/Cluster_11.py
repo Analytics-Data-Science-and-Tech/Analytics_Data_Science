@@ -133,8 +133,8 @@ score_list_lgb = []
 test_preds_lgb = []
 fold = 1
 
-for train_index, test_index in kf.split(X, Y, groups = X.year):
-# for train_index, test_index in kf.split(X, Y):
+# for train_index, test_index in kf.split(X, Y, groups = X.year):
+for train_index, test_index in kf.split(X, Y):
     
     ## Splitting the data
     X_train , X_val = X.iloc[train_index], X.iloc[test_index]  

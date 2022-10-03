@@ -117,8 +117,8 @@ test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 ## Cluster 1 ##
 ###############
 
-train = train[train['cluster_9'] == 1].reset_index(drop = True)
-test = test[test['cluster_9'] == 1].reset_index(drop = True)
+train = train[train['cluster_10'] == 1].reset_index(drop = True)
+test = test[test['cluster_10'] == 1].reset_index(drop = True)
 
 X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
@@ -145,8 +145,8 @@ for train_index, test_index in kf.split(X, Y):
     
     model_lgb = LGBMRegressor(n_estimators = 5000, 
                               learning_rate = 0.01,
-                              num_leaves = 40,
-                              max_depth = 11, 
+                              num_leaves = 50,
+                              max_depth = 13, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
                               bagging_fraction = 0.9, 
@@ -183,7 +183,13 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-data_out.to_csv('Cluster_9.csv', index = False)
+data_out.to_csv('Cluster_10.csv', index = False)
 
 print('-- Process Finished --')
 
+# Fold  1  result is: 1.4509928188074508
+# Fold  2  result is: 1.4649269858746048
+# Fold  3  result is: 1.4494264007860485
+# Fold  4  result is: 1.4555972002372444
+# Fold  5  result is: 1.4379643520515166
+# Cross validation mean score: 1.4517815515513732

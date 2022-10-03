@@ -183,7 +183,7 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-data_out.to_csv('Cluster_7.csv', index = False)
+data_out.to_csv('Cluster_8.csv', index = False)
 
 print('-- Process Finished --')
 

@@ -117,8 +117,8 @@ test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 ## Cluster 1 ##
 ###############
 
-train = train[train['cluster_11'] == 1].reset_index(drop = True)
-test = test[test['cluster_11'] == 1].reset_index(drop = True)
+train = train[train['cluster_12'] == 1].reset_index(drop = True)
+test = test[test['cluster_12'] == 1].reset_index(drop = True)
 
 X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
@@ -146,7 +146,7 @@ for train_index, test_index in kf.split(X, Y):
     model_lgb = LGBMRegressor(n_estimators = 5000, 
                               learning_rate = 0.01,
                               num_leaves = 50,
-                              max_depth = 17, 
+                              max_depth = 15, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
                               bagging_fraction = 0.9, 
@@ -187,3 +187,9 @@ data_out.to_csv('Cluster_12.csv', index = False)
 
 print('-- Process Finished --')
 
+# Fold  1  result is: 1.2303284557412515
+# Fold  2  result is: 1.1851934485053093
+# Fold  3  result is: 1.2491116828773976
+# Fold  4  result is: 1.2074036854822578
+# Fold  5  result is: 1.1935456432894556
+# Cross validation mean score: 1.2131165831791344

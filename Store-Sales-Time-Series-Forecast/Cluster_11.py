@@ -86,7 +86,7 @@ train = pd.concat([train.drop(columns = ['family'], axis = 1), family_dummies], 
 
 train['day'] = train['date'].dt.dayofweek
 train['month'] = train['date'].dt.month
-train['year'] = train['date'].dt.year
+# train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
 
 ##################
@@ -110,7 +110,7 @@ test = pd.concat([test.drop(columns = ['family'], axis = 1), family_dummies], ax
 
 test['day'] = test['date'].dt.dayofweek
 test['month'] = test['date'].dt.month
-test['year'] = test['date'].dt.year
+# test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
 ###############
@@ -133,8 +133,8 @@ score_list_lgb = []
 test_preds_lgb = []
 fold = 1
 
-# for train_index, test_index in kf.split(X, Y, groups = X.year):
-for train_index, test_index in kf.split(X, Y):
+for train_index, test_index in kf.split(X, Y, groups = X.year):
+# for train_index, test_index in kf.split(X, Y):
     
     ## Splitting the data
     X_train , X_val = X.iloc[train_index], X.iloc[test_index]  

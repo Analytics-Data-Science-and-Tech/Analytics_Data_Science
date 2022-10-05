@@ -93,6 +93,14 @@ transactions['date'] = pd.to_datetime(transactions['date'], format = '%Y-%m-%d')
 train = pd.merge(train, transactions, on = ['date', 'store_nbr'], how = 'left')
 train['transactions'] = train['transactions'].fillna(0)
 
+## Aggregating transactions for test dataset
+trans_agg = pd.DataFrame(train.groupby(['store_nbr', 'month', 'day'])['transactions'].mean())
+trans_agg['store_nbr'] = trans_agg.index.get_level_values(0)
+trans_agg['month'] = trans_agg.index.get_level_values(1)
+trans_agg['day'] = trans_agg.index.get_level_values(2)
+trans_agg = trans_agg.reset_index(drop = True)
+trans_agg = trans_agg[['store_nbr', 'month', 'day', 'transactions']]
+
 store_dummies = pd.get_dummies(train['store_nbr'])
 store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
 train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
@@ -100,14 +108,6 @@ train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies]
 ##################
 ## Test Dataset ##
 ##################
-
-## Aggregating transactions
-trans_agg = pd.DataFrame(train.groupby(['store_nbr', 'month', 'day'])['transactions'].mean())
-trans_agg['store_nbr'] = trans_agg.index.get_level_values(0)
-trans_agg['month'] = trans_agg.index.get_level_values(1)
-trans_agg['day'] = trans_agg.index.get_level_values(2)
-trans_agg = trans_agg.reset_index(drop = True)
-trans_agg = trans_agg[['store_nbr', 'month', 'day', 'transactions']]
 
 ## Appending oil prices and holiday
 test = pd.merge(test, oil, on = 'date', how = 'left')
@@ -204,6 +204,13 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-# data_out.to_csv('Cluster_1.csv', index = False)
+data_out.to_csv('Cluster_1.csv', index = False)
 
 print('-- Process Finished --')
+
+# Fold  1  result is: 1.0606198181099529
+# Fold  2  result is: 1.0698296911869882
+# Fold  3  result is: 1.042406882497272
+# Fold  4  result is: 1.0680220992658784
+# Fold  5  result is: 1.0557715216491894
+# Cross validation mean score: 1.0593300025418562

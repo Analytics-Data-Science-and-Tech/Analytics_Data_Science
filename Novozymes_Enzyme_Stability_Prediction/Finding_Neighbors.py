@@ -36,7 +36,7 @@ def amino_acid_neighbors(pdb_file, k):
     distances, indices = nbrs.kneighbors(scaled_data)
     
     neighbors_names = ['neighbor_' + str(i) for i in range(1, (k + 1))]
-    neighbors = pd.DataFrame(indices[:,1:] + 1, columns = neighbors_names)
+    neighbors = pd.DataFrame(indices[:, 1:] + 1, columns = neighbors_names)
     
     ## Appending neighbors
     residue = pd.concat([residue_agg, neighbors], axis = 1) 

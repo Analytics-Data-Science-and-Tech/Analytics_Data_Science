@@ -86,16 +86,33 @@ train = pd.concat([train.drop(columns = ['family'], axis = 1), family_dummies], 
 
 train['day'] = train['date'].dt.dayofweek
 train['month'] = train['date'].dt.month
-train['year'] = train['date'].dt.year
+# train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
+
+transactions['date'] = pd.to_datetime(transactions['date'], format = '%Y-%m-%d')
+train = pd.merge(train, transactions, on = ['date', 'store_nbr'], how = 'left')
+train['transactions'] = train['transactions'].fillna(0)
+
+## Aggregating transactions for test dataset
+trans_agg = pd.DataFrame(train.groupby(['store_nbr', 'month', 'day'])['transactions'].mean())
+trans_agg['store_nbr'] = trans_agg.index.get_level_values(0)
+trans_agg['month'] = trans_agg.index.get_level_values(1)
+trans_agg['day'] = trans_agg.index.get_level_values(2)
+trans_agg = trans_agg.reset_index(drop = True)
+trans_agg = trans_agg[['store_nbr', 'month', 'day', 'transactions']]
+
+store_dummies = pd.get_dummies(train['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
 
 ##################
 ## Test Dataset ##
 ##################
 
 ## Appending oil prices and holiday
-test = pd.merge(test, holidays, on = 'date', how = 'left')
 test = pd.merge(test, oil, on = 'date', how = 'left')
+test = pd.merge(test, holidays, on = 'date', how = 'left')
 test = pd.merge(test, stores, on = 'store_nbr', how = 'left')
 test['date'] = pd.to_datetime(test['date'], format = '%Y-%m-%d')
 
@@ -110,31 +127,38 @@ test = pd.concat([test.drop(columns = ['family'], axis = 1), family_dummies], ax
 
 test['day'] = test['date'].dt.dayofweek
 test['month'] = test['date'].dt.month
-test['year'] = test['date'].dt.year
+# test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
+test = pd.merge(test, trans_agg, on = ['store_nbr', 'month', 'day'], how = 'left')
+
+store_dummies = pd.get_dummies(test['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+
 ###############
-## Cluster 1 ##
+## Cluster 6 ##
 ###############
 
 train = train[train['cluster_6'] == 1].reset_index(drop = True)
 test = test[test['cluster_6'] == 1].reset_index(drop = True)
 
-X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+X = train.drop(columns = ['id', 'date', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
 
 test_ids = test['id']
-test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+test = test.drop(columns = ['id', 'date', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
-kf = GroupKFold(n_splits = 5)
-# kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
+# kf = GroupKFold(n_splits = 5)
+kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
 score_list_lgb = []
 test_preds_lgb = []
 fold = 1
 
-for train_index, test_index in kf.split(X, Y, groups = X.year):
-# for train_index, test_index in kf.split(X, Y):
+# for train_index, test_index in kf.split(X, Y, groups = X.year):
+for train_index, test_index in kf.split(X, Y):
     
     ## Splitting the data
     X_train , X_val = X.iloc[train_index], X.iloc[test_index]  
@@ -186,6 +210,13 @@ data_out['sales'] = test_preds_lgb
 data_out.to_csv('Cluster_6.csv', index = False)
 
 print('-- Process Finished --')
+
+# Fold  1  result is: 1.3279949987241741
+# Fold  2  result is: 1.316097321784777
+# Fold  3  result is: 1.3225731180214535
+# Fold  4  result is: 1.3615995468330966 
+# Fold  5  result is: 1.3256971261720503
+# Cross validation mean score: 1.3307924223071104
 
 # Fold  1  result is: 1.9025728880211512
 # Fold  2  result is: 1.9124798783045247

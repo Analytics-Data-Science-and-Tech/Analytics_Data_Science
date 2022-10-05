@@ -32,7 +32,7 @@ def amino_acid_neighbors(pdb_file, k):
     residue_agg[['x_coord', 'y_coord', 'z_coord']] = pd.DataFrame(scaler.fit_transform(residue_agg[['x_coord', 'y_coord', 'z_coord']]), columns = ['x_coord', 'y_coord', 'z_coord'])
     
     ## Finding the k-neighbors
-    nbrs = NearestNeighbors(n_neighbors = k).fit(residue_agg[['x_coord', 'y_coord', 'z_coord']])
+    nbrs = NearestNeighbors(n_neighbors = (k + 1)).fit(residue_agg[['x_coord', 'y_coord', 'z_coord']])
     distances, indices = nbrs.kneighbors(residue_agg[['x_coord', 'y_coord', 'z_coord']])
     
     neighbors_names = ['neighbor_' + str(i) for i in range(1, (k + 1))]

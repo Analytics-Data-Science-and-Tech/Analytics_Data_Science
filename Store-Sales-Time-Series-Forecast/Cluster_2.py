@@ -84,9 +84,13 @@ family_dummies = pd.get_dummies(train['family'])
 family_dummies.columns = ['family_' + str(i) for i in range(1, 34)]
 train = pd.concat([train.drop(columns = ['family'], axis = 1), family_dummies], axis = 1)
 
+store_dummies = pd.get_dummies(train['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
 train['day'] = train['date'].dt.dayofweek
 train['month'] = train['date'].dt.month
-train['year'] = train['date'].dt.year
+# train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
 
 ##################
@@ -108,33 +112,37 @@ family_dummies = pd.get_dummies(test['family'])
 family_dummies.columns = ['family_' + str(i) for i in range(1, 34)]
 test = pd.concat([test.drop(columns = ['family'], axis = 1), family_dummies], axis = 1)
 
+store_dummies = pd.get_dummies(test['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
 test['day'] = test['date'].dt.dayofweek
 test['month'] = test['date'].dt.month
-test['year'] = test['date'].dt.year
+# test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
 ###############
-## Cluster 1 ##
+## Cluster 2 ##
 ###############
 
 train = train[train['cluster_2'] == 1].reset_index(drop = True)
 test = test[test['cluster_2'] == 1].reset_index(drop = True)
 
-X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+X = train.drop(columns = ['id', 'date', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
 
 test_ids = test['id']
-test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+test = test.drop(columns = ['id', 'date', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
-kf = GroupKFold(n_splits = 5)
-# kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
+# kf = GroupKFold(n_splits = 5)
+kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
 score_list_lgb = []
 test_preds_lgb = []
 fold = 1
 
-for train_index, test_index in kf.split(X, Y, groups = X.year):
-# for train_index, test_index in kf.split(X, Y):
+# for train_index, test_index in kf.split(X, Y, groups = X.year):
+for train_index, test_index in kf.split(X, Y):
     
     ## Splitting the data
     X_train , X_val = X.iloc[train_index], X.iloc[test_index]  
@@ -145,7 +153,7 @@ for train_index, test_index in kf.split(X, Y, groups = X.year):
     
     model_lgb = LGBMRegressor(n_estimators = 5000, 
                               learning_rate = 0.01,
-                              num_leaves = 40,
+                              num_leaves = 50,
                               max_depth = 17, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
@@ -187,11 +195,10 @@ data_out.to_csv('Cluster_2.csv', index = False)
 
 print('-- Process Finished --')
 
-# Fold  1  result is: 1.314613168728314
-# Fold  2  result is: 2.6433731600401686
-# Fold  3  result is: 2.8606102418902832 
-# Fold  4  result is: 2.3513694882018137
-# Fold  5  result is: 0.8063376917626087
-# Cross validation mean score: 1.9952607501246375    
-    
+# Fold  1  result is: 1.4737775240469693
+# Fold  2  result is: 1.497781103082433
+# Fold  3  result is: 1.5147018138532609
+# Fold  4  result is: 1.4597258830812825
+# Fold  5  result is: 1.5005885967365054
+# Cross validation mean score: 1.4893149841600901
 

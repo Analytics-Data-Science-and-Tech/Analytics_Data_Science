@@ -84,6 +84,10 @@ family_dummies = pd.get_dummies(train['family'])
 family_dummies.columns = ['family_' + str(i) for i in range(1, 34)]
 train = pd.concat([train.drop(columns = ['family'], axis = 1), family_dummies], axis = 1)
 
+store_dummies = pd.get_dummies(train['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
 train['day'] = train['date'].dt.dayofweek
 train['month'] = train['date'].dt.month
 train['year'] = train['date'].dt.year
@@ -108,6 +112,10 @@ family_dummies = pd.get_dummies(test['family'])
 family_dummies.columns = ['family_' + str(i) for i in range(1, 34)]
 test = pd.concat([test.drop(columns = ['family'], axis = 1), family_dummies], axis = 1)
 
+store_dummies = pd.get_dummies(test['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
 test['day'] = test['date'].dt.dayofweek
 test['month'] = test['date'].dt.month
 test['year'] = test['date'].dt.year
@@ -120,11 +128,11 @@ test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 train = train[train['cluster_1'] == 1].reset_index(drop = True)
 test = test[test['cluster_1'] == 1].reset_index(drop = True)
 
-X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+X = train.drop(columns = ['id', 'date', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
 
 test_ids = test['id']
-test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+test = test.drop(columns = ['id', 'date', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
 # kf = GroupKFold(n_splits = 5)
@@ -182,6 +190,6 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-data_out.to_csv('Cluster_1.csv', index = False)
+# data_out.to_csv('Cluster_1.csv', index = False)
 
 print('-- Process Finished --')

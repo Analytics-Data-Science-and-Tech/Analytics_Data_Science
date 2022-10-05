@@ -207,14 +207,15 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-# data_out.to_csv('Cluster_2.csv', index = False)
+data_out.to_csv('Cluster_2.csv', index = False)
 
 print('-- Process Finished --')
 
-# Fold  1  result is: 1.4737775240469693
-# Fold  2  result is: 1.497781103082433
-# Fold  3  result is: 1.5147018138532609
-# Fold  4  result is: 1.4597258830812825
-# Fold  5  result is: 1.5005885967365054
-# Cross validation mean score: 1.4893149841600901
+# Fold  1  result is: 0.991133009977702
+# Fold  2  result is: 1.0253242848711932
+# Fold  3  result is: 1.066979272570499
+# Fold  4  result is: 1.0041547989056854
+# Fold  5  result is: 1.034053862572855
+# Cross validation mean score: 1.024329045779587
 
+## Take a look at this again

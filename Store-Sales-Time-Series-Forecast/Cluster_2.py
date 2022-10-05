@@ -114,7 +114,7 @@ test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
 ###############
-## Cluster 1 ##
+## Cluster 2 ##
 ###############
 
 train = train[train['cluster_2'] == 1].reset_index(drop = True)
@@ -145,7 +145,7 @@ for train_index, test_index in kf.split(X, Y, groups = X.year):
     
     model_lgb = LGBMRegressor(n_estimators = 5000, 
                               learning_rate = 0.01,
-                              num_leaves = 40,
+                              num_leaves = 50,
                               max_depth = 17, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 

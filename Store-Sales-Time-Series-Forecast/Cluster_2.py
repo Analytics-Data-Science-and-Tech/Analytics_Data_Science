@@ -84,22 +84,35 @@ family_dummies = pd.get_dummies(train['family'])
 family_dummies.columns = ['family_' + str(i) for i in range(1, 34)]
 train = pd.concat([train.drop(columns = ['family'], axis = 1), family_dummies], axis = 1)
 
-store_dummies = pd.get_dummies(train['store_nbr'])
-store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
-train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
-
 train['day'] = train['date'].dt.dayofweek
 train['month'] = train['date'].dt.month
 # train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
+
+transactions['date'] = pd.to_datetime(transactions['date'], format = '%Y-%m-%d')
+train = pd.merge(train, transactions, on = ['date', 'store_nbr'], how = 'left')
+train['transactions'] = train['transactions'].fillna(0)
+
+## Aggregating transactions for test dataset
+trans_agg = pd.DataFrame(train.groupby(['store_nbr', 'month', 'day'])['transactions'].mean())
+trans_agg['store_nbr'] = trans_agg.index.get_level_values(0)
+trans_agg['month'] = trans_agg.index.get_level_values(1)
+trans_agg['day'] = trans_agg.index.get_level_values(2)
+trans_agg = trans_agg.reset_index(drop = True)
+trans_agg = trans_agg[['store_nbr', 'month', 'day', 'transactions']]
+
+store_dummies = pd.get_dummies(train['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
 
 ##################
 ## Test Dataset ##
 ##################
 
 ## Appending oil prices and holiday
-test = pd.merge(test, holidays, on = 'date', how = 'left')
 test = pd.merge(test, oil, on = 'date', how = 'left')
+test = pd.merge(test, holidays, on = 'date', how = 'left')
 test = pd.merge(test, stores, on = 'store_nbr', how = 'left')
 test['date'] = pd.to_datetime(test['date'], format = '%Y-%m-%d')
 
@@ -112,14 +125,17 @@ family_dummies = pd.get_dummies(test['family'])
 family_dummies.columns = ['family_' + str(i) for i in range(1, 34)]
 test = pd.concat([test.drop(columns = ['family'], axis = 1), family_dummies], axis = 1)
 
-store_dummies = pd.get_dummies(test['store_nbr'])
-store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
-test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
-
 test['day'] = test['date'].dt.dayofweek
 test['month'] = test['date'].dt.month
 # test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
+
+test = pd.merge(test, trans_agg, on = ['store_nbr', 'month', 'day'], how = 'left')
+
+store_dummies = pd.get_dummies(test['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
 
 ###############
 ## Cluster 2 ##
@@ -191,7 +207,7 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-data_out.to_csv('Cluster_2.csv', index = False)
+# data_out.to_csv('Cluster_2.csv', index = False)
 
 print('-- Process Finished --')
 

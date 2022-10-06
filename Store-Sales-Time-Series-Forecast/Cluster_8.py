@@ -89,13 +89,30 @@ train['month'] = train['date'].dt.month
 train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
 
+# transactions['date'] = pd.to_datetime(transactions['date'], format = '%Y-%m-%d')
+# train = pd.merge(train, transactions, on = ['date', 'store_nbr'], how = 'left')
+# train['transactions'] = train['transactions'].fillna(0)
+
+# ## Aggregating transactions for test dataset
+# trans_agg = pd.DataFrame(train.groupby(['store_nbr', 'month', 'day'])['transactions'].mean())
+# trans_agg['store_nbr'] = trans_agg.index.get_level_values(0)
+# trans_agg['month'] = trans_agg.index.get_level_values(1)
+# trans_agg['day'] = trans_agg.index.get_level_values(2)
+# trans_agg = trans_agg.reset_index(drop = True)
+# trans_agg = trans_agg[['store_nbr', 'month', 'day', 'transactions']]
+
+# store_dummies = pd.get_dummies(train['store_nbr'])
+# store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+# train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+
 ##################
 ## Test Dataset ##
 ##################
 
 ## Appending oil prices and holiday
-test = pd.merge(test, holidays, on = 'date', how = 'left')
 test = pd.merge(test, oil, on = 'date', how = 'left')
+test = pd.merge(test, holidays, on = 'date', how = 'left')
 test = pd.merge(test, stores, on = 'store_nbr', how = 'left')
 test['date'] = pd.to_datetime(test['date'], format = '%Y-%m-%d')
 
@@ -113,8 +130,15 @@ test['month'] = test['date'].dt.month
 test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
+# test = pd.merge(test, trans_agg, on = ['store_nbr', 'month', 'day'], how = 'left')
+
+# store_dummies = pd.get_dummies(test['store_nbr'])
+# store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+# test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+
 ###############
-## Cluster 1 ##
+## Cluster 8 ##
 ###############
 
 train = train[train['cluster_8'] == 1].reset_index(drop = True)
@@ -145,8 +169,8 @@ for train_index, test_index in kf.split(X, Y):
     
     model_lgb = LGBMRegressor(n_estimators = 5000, 
                               learning_rate = 0.01,
-                              num_leaves = 40,
-                              max_depth = 11, 
+                              num_leaves = 50,
+                              max_depth = 15, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
                               bagging_fraction = 0.9, 
@@ -183,13 +207,15 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-data_out.to_csv('Cluster_8.csv', index = False)
+# data_out.to_csv('Cluster_8.csv', index = False)
 
 print('-- Process Finished --')
 
-# Fold  1  result is: 1.2198435167248105
-# Fold  2  result is: 1.2288715748782966
-# Fold  3  result is: 1.1798674806123874
-# Fold  4  result is: 1.184802405285514
-# Fold  5  result is: 1.2293917401311247
-# Cross validation mean score: 1.208555343526427
+# Fold  1  result is: 1.1799158553421072
+# Fold  2  result is: 1.1574890299243108
+# Fold  3  result is: 1.1504668836591854
+# Fold  4  result is: 1.131082253784505
+# Fold  5  result is: 1.1480281104019865
+# Cross validation mean score: 1.1533964266224188    
+
+

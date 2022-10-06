@@ -86,16 +86,33 @@ train = pd.concat([train.drop(columns = ['family'], axis = 1), family_dummies], 
 
 train['day'] = train['date'].dt.dayofweek
 train['month'] = train['date'].dt.month
-train['year'] = train['date'].dt.year
+# train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
+
+transactions['date'] = pd.to_datetime(transactions['date'], format = '%Y-%m-%d')
+train = pd.merge(train, transactions, on = ['date', 'store_nbr'], how = 'left')
+train['transactions'] = train['transactions'].fillna(0)
+
+## Aggregating transactions for test dataset
+trans_agg = pd.DataFrame(train.groupby(['store_nbr', 'month', 'day'])['transactions'].mean())
+trans_agg['store_nbr'] = trans_agg.index.get_level_values(0)
+trans_agg['month'] = trans_agg.index.get_level_values(1)
+trans_agg['day'] = trans_agg.index.get_level_values(2)
+trans_agg = trans_agg.reset_index(drop = True)
+trans_agg = trans_agg[['store_nbr', 'month', 'day', 'transactions']]
+
+store_dummies = pd.get_dummies(train['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
 
 ##################
 ## Test Dataset ##
 ##################
 
 ## Appending oil prices and holiday
-test = pd.merge(test, holidays, on = 'date', how = 'left')
 test = pd.merge(test, oil, on = 'date', how = 'left')
+test = pd.merge(test, holidays, on = 'date', how = 'left')
 test = pd.merge(test, stores, on = 'store_nbr', how = 'left')
 test['date'] = pd.to_datetime(test['date'], format = '%Y-%m-%d')
 
@@ -110,21 +127,28 @@ test = pd.concat([test.drop(columns = ['family'], axis = 1), family_dummies], ax
 
 test['day'] = test['date'].dt.dayofweek
 test['month'] = test['date'].dt.month
-test['year'] = test['date'].dt.year
+# test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
+test = pd.merge(test, trans_agg, on = ['store_nbr', 'month', 'day'], how = 'left')
+
+store_dummies = pd.get_dummies(test['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+
 ###############
-## Cluster 1 ##
+## Cluster 8 ##
 ###############
 
 train = train[train['cluster_8'] == 1].reset_index(drop = True)
 test = test[test['cluster_8'] == 1].reset_index(drop = True)
 
-X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+X = train.drop(columns = ['id', 'date', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
 
 test_ids = test['id']
-test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+test = test.drop(columns = ['id', 'date', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
 # kf = GroupKFold(n_splits = 5)
@@ -145,8 +169,8 @@ for train_index, test_index in kf.split(X, Y):
     
     model_lgb = LGBMRegressor(n_estimators = 5000, 
                               learning_rate = 0.01,
-                              num_leaves = 40,
-                              max_depth = 11, 
+                              num_leaves = 50,
+                              max_depth = 15, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
                               bagging_fraction = 0.9, 
@@ -183,7 +207,7 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-data_out.to_csv('Cluster_8.csv', index = False)
+# data_out.to_csv('Cluster_8.csv', index = False)
 
 print('-- Process Finished --')
 

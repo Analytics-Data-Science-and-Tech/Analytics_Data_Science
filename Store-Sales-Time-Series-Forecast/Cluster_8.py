@@ -86,24 +86,24 @@ train = pd.concat([train.drop(columns = ['family'], axis = 1), family_dummies], 
 
 train['day'] = train['date'].dt.dayofweek
 train['month'] = train['date'].dt.month
-# train['year'] = train['date'].dt.year
+train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
 
-transactions['date'] = pd.to_datetime(transactions['date'], format = '%Y-%m-%d')
-train = pd.merge(train, transactions, on = ['date', 'store_nbr'], how = 'left')
-train['transactions'] = train['transactions'].fillna(0)
+# transactions['date'] = pd.to_datetime(transactions['date'], format = '%Y-%m-%d')
+# train = pd.merge(train, transactions, on = ['date', 'store_nbr'], how = 'left')
+# train['transactions'] = train['transactions'].fillna(0)
 
-## Aggregating transactions for test dataset
-trans_agg = pd.DataFrame(train.groupby(['store_nbr', 'month', 'day'])['transactions'].mean())
-trans_agg['store_nbr'] = trans_agg.index.get_level_values(0)
-trans_agg['month'] = trans_agg.index.get_level_values(1)
-trans_agg['day'] = trans_agg.index.get_level_values(2)
-trans_agg = trans_agg.reset_index(drop = True)
-trans_agg = trans_agg[['store_nbr', 'month', 'day', 'transactions']]
+# ## Aggregating transactions for test dataset
+# trans_agg = pd.DataFrame(train.groupby(['store_nbr', 'month', 'day'])['transactions'].mean())
+# trans_agg['store_nbr'] = trans_agg.index.get_level_values(0)
+# trans_agg['month'] = trans_agg.index.get_level_values(1)
+# trans_agg['day'] = trans_agg.index.get_level_values(2)
+# trans_agg = trans_agg.reset_index(drop = True)
+# trans_agg = trans_agg[['store_nbr', 'month', 'day', 'transactions']]
 
-store_dummies = pd.get_dummies(train['store_nbr'])
-store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
-train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+# store_dummies = pd.get_dummies(train['store_nbr'])
+# store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+# train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
 
 
 ##################
@@ -127,14 +127,14 @@ test = pd.concat([test.drop(columns = ['family'], axis = 1), family_dummies], ax
 
 test['day'] = test['date'].dt.dayofweek
 test['month'] = test['date'].dt.month
-# test['year'] = test['date'].dt.year
+test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
-test = pd.merge(test, trans_agg, on = ['store_nbr', 'month', 'day'], how = 'left')
+# test = pd.merge(test, trans_agg, on = ['store_nbr', 'month', 'day'], how = 'left')
 
-store_dummies = pd.get_dummies(test['store_nbr'])
-store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
-test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+# store_dummies = pd.get_dummies(test['store_nbr'])
+# store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+# test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
 
 
 ###############
@@ -144,11 +144,11 @@ test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], 
 train = train[train['cluster_8'] == 1].reset_index(drop = True)
 test = test[test['cluster_8'] == 1].reset_index(drop = True)
 
-X = train.drop(columns = ['id', 'date', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
 
 test_ids = test['id']
-test = test.drop(columns = ['id', 'date', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
 # kf = GroupKFold(n_splits = 5)
@@ -207,13 +207,14 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-# data_out.to_csv('Cluster_8.csv', index = False)
+data_out.to_csv('Cluster_8.csv', index = False)
 
 print('-- Process Finished --')
 
-# Fold  1  result is: 1.2198435167248105
-# Fold  2  result is: 1.2288715748782966
-# Fold  3  result is: 1.1798674806123874
-# Fold  4  result is: 1.184802405285514
-# Fold  5  result is: 1.2293917401311247
-# Cross validation mean score: 1.208555343526427
+# Fold  1  result is: 1.1903726352956019
+# Fold  2  result is: 1.1991695489085306
+# Fold  3  result is: 1.1885242597096521
+# Fold  4  result is: 1.1746509754250014
+# Fold  5  result is: 1.2137088824001643
+# Cross validation mean score: 1.1932852603477901
+

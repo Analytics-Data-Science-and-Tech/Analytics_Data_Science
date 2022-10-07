@@ -89,13 +89,18 @@ train['month'] = train['date'].dt.month
 # train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
 
+store_dummies = pd.get_dummies(train['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+
 ##################
 ## Test Dataset ##
 ##################
 
 ## Appending oil prices and holiday
-test = pd.merge(test, holidays, on = 'date', how = 'left')
 test = pd.merge(test, oil, on = 'date', how = 'left')
+test = pd.merge(test, holidays, on = 'date', how = 'left')
 test = pd.merge(test, stores, on = 'store_nbr', how = 'left')
 test['date'] = pd.to_datetime(test['date'], format = '%Y-%m-%d')
 
@@ -113,18 +118,22 @@ test['month'] = test['date'].dt.month
 # test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
-###############
-## Cluster 1 ##
-###############
+store_dummies = pd.get_dummies(test['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+################
+## Cluster 11 ##
+################
 
 train = train[train['cluster_11'] == 1].reset_index(drop = True)
 test = test[test['cluster_11'] == 1].reset_index(drop = True)
 
-X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+X = train.drop(columns = ['id', 'date', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
 
 test_ids = test['id']
-test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+test = test.drop(columns = ['id', 'date', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
 # kf = GroupKFold(n_splits = 5)
@@ -186,6 +195,13 @@ data_out['sales'] = test_preds_lgb
 data_out.to_csv('Cluster_11.csv', index = False)
 
 print('-- Process Finished --')
+
+# Fold  1  result is: 1.556809961469874
+# Fold  2  result is: 1.5631192446018298
+# Fold  3  result is: 1.544501708596465
+# Fold  4  result is: 1.5536087989544431
+# Fold  5  result is: 1.5632373394888 
+# Cross validation mean score: 1.5562554106222821
 
 # Fold  1  result is: 2.657795752834132
 # Fold  2  result is: 2.661710277368256

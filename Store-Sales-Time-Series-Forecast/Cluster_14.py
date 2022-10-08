@@ -89,6 +89,11 @@ train['month'] = train['date'].dt.month
 # train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
 
+store_dummies = pd.get_dummies(train['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+
 ##################
 ## Test Dataset ##
 ##################
@@ -113,18 +118,23 @@ test['month'] = test['date'].dt.month
 # test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
-###############
-## Cluster 1 ##
-###############
+store_dummies = pd.get_dummies(test['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+
+################
+## Cluster 14 ##
+################
 
 train = train[train['cluster_14'] == 1].reset_index(drop = True)
 test = test[test['cluster_14'] == 1].reset_index(drop = True)
 
-X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+X = train.drop(columns = ['id', 'date', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
 
 test_ids = test['id']
-test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+test = test.drop(columns = ['id', 'date', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
 # kf = GroupKFold(n_splits = 5)
@@ -186,6 +196,13 @@ data_out['sales'] = test_preds_lgb
 data_out.to_csv('Cluster_14.csv', index = False)
 
 print('-- Process Finished --')
+
+# Fold  1  result is: 1.356235833499537
+# Fold  2  result is: 1.3612448766477574
+# Fold  3  result is: 1.3329738494844026
+# Fold  4  result is: 1.3570854946158648
+# Fold  5  result is: 1.3498058088649982
+# Cross validation mean score: 1.351469172622512
 
 # Fold  1  result is: 1.3631478243142725
 # Fold  2  result is: 1.3604562506236744

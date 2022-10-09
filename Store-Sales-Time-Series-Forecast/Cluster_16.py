@@ -197,6 +197,13 @@ data_out.to_csv('Cluster_16.csv', index = False)
 
 print('-- Process Finished --')
 
+# Fold  1  result is: 1.490902748092576
+# Fold  2  result is: 1.4766507619875575
+# Fold  3  result is: 1.4988013167771357
+# Fold  4  result is: 1.4104985981870333
+# Fold  5  result is: 1.4213855564815994
+# Cross validation mean score: 1.4596477963051804
+
 # Fold  1  result is: 1.4992117499204263
 # Fold  2  result is: 1.4802555424019044
 # Fold  3  result is: 1.5037243334395904

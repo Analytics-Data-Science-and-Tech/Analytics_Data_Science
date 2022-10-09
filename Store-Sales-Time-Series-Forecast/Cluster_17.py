@@ -89,6 +89,11 @@ train['month'] = train['date'].dt.month
 # train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
 
+store_dummies = pd.get_dummies(train['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+
 ##################
 ## Test Dataset ##
 ##################
@@ -113,18 +118,23 @@ test['month'] = test['date'].dt.month
 # test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
-###############
-## Cluster 1 ##
-###############
+store_dummies = pd.get_dummies(test['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+
+################
+## Cluster 17 ##
+################
 
 train = train[train['cluster_17'] == 1].reset_index(drop = True)
 test = test[test['cluster_17'] == 1].reset_index(drop = True)
 
-X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+X = train.drop(columns = ['id', 'date', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
 
 test_ids = test['id']
-test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+test = test.drop(columns = ['id', 'date', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
 # kf = GroupKFold(n_splits = 5)
@@ -183,7 +193,7 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-data_out.to_csv('Cluster_17.csv', index = False)
+# data_out.to_csv('Cluster_17.csv', index = False)
 
 print('-- Process Finished --')
 

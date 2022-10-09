@@ -156,7 +156,7 @@ for train_index, test_index in kf.split(X, Y):
     model_lgb = LGBMRegressor(n_estimators = 5000, 
                               learning_rate = 0.01,
                               num_leaves = 50,
-                              max_depth = 15, 
+                              max_depth = 17, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
                               bagging_fraction = 0.9, 
@@ -193,7 +193,7 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-# data_out.to_csv('Cluster_16.csv', index = False)
+data_out.to_csv('Cluster_16.csv', index = False)
 
 print('-- Process Finished --')
 

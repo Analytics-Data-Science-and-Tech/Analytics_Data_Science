@@ -89,6 +89,11 @@ train['month'] = train['date'].dt.month
 # train['year'] = train['date'].dt.year
 train['is_holiday'] = np.where(train['holiday_type'] == 'Holiday', 1, 0)
 
+store_dummies = pd.get_dummies(train['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+train = pd.concat([train.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+
 ##################
 ## Test Dataset ##
 ##################
@@ -113,22 +118,28 @@ test['month'] = test['date'].dt.month
 # test['year'] = test['date'].dt.year
 test['is_holiday'] = np.where(test['holiday_type'] == 'Holiday', 1, 0)
 
-###############
-## Cluster 1 ##
-###############
+store_dummies = pd.get_dummies(test['store_nbr'])
+store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
+test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+
+################
+## Cluster 17 ##
+################
 
 train = train[train['cluster_17'] == 1].reset_index(drop = True)
 test = test[test['cluster_17'] == 1].reset_index(drop = True)
 
-X = train.drop(columns = ['id', 'date', 'store_nbr', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+X = train.drop(columns = ['id', 'date', 'sales', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 Y = train['sales']
 
 test_ids = test['id']
-test = test.drop(columns = ['id', 'date', 'store_nbr', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
+test = test.drop(columns = ['id', 'date', 'holiday_type', 'locale', 'locale_name', 'description', 'transferred', 'city', 'state', 'store_type'], axis = 1)
 
 t1 = time.time()
 # kf = GroupKFold(n_splits = 5)
-kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
+# kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
+kf = KFold(n_splits = 5, shuffle = True, random_state = 111)
 score_list_lgb = []
 test_preds_lgb = []
 fold = 1
@@ -146,7 +157,7 @@ for train_index, test_index in kf.split(X, Y):
     model_lgb = LGBMRegressor(n_estimators = 5000, 
                               learning_rate = 0.01,
                               num_leaves = 50,
-                              max_depth = 15, 
+                              max_depth = 17, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
                               bagging_fraction = 0.9, 
@@ -186,6 +197,13 @@ data_out['sales'] = test_preds_lgb
 data_out.to_csv('Cluster_17.csv', index = False)
 
 print('-- Process Finished --')
+
+# Fold  1  result is: 1.3207242310144405 
+# Fold  2  result is: 1.3370336528610682
+# Fold  3  result is: 1.3251884198933572
+# Fold  4  result is: 1.3137432394688129
+# Fold  5  result is: 1.29366304807470
+# Cross validation mean score: 1.318070518262477 
 
 # Fold  1  result is: 1.325178117383927
 # Fold  2  result is: 1.2794275261381411

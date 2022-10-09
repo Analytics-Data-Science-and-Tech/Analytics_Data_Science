@@ -138,7 +138,8 @@ test = test.drop(columns = ['id', 'date', 'holiday_type', 'locale', 'locale_name
 
 t1 = time.time()
 # kf = GroupKFold(n_splits = 5)
-kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
+# kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
+kf = KFold(n_splits = 5, shuffle = True, random_state = 111)
 score_list_lgb = []
 test_preds_lgb = []
 fold = 1
@@ -156,7 +157,7 @@ for train_index, test_index in kf.split(X, Y):
     model_lgb = LGBMRegressor(n_estimators = 5000, 
                               learning_rate = 0.01,
                               num_leaves = 50,
-                              max_depth = 15, 
+                              max_depth = 17, 
                               lambda_l1 = 3, 
                               lambda_l2 = 1, 
                               bagging_fraction = 0.9, 
@@ -193,9 +194,16 @@ test_preds_lgb = test_preds_lgb.mean(axis = 0)
 
 data_out = pd.DataFrame({'id': test_ids})
 data_out['sales'] = test_preds_lgb
-# data_out.to_csv('Cluster_17.csv', index = False)
+data_out.to_csv('Cluster_17.csv', index = False)
 
 print('-- Process Finished --')
+
+# Fold  1  result is: 1.3207242310144405 
+# Fold  2  result is: 1.3370336528610682
+# Fold  3  result is: 1.3251884198933572
+# Fold  4  result is: 1.3137432394688129
+# Fold  5  result is: 1.29366304807470
+# Cross validation mean score: 1.318070518262477 
 
 # Fold  1  result is: 1.325178117383927
 # Fold  2  result is: 1.2794275261381411

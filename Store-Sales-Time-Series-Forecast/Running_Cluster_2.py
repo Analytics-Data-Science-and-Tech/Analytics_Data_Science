@@ -135,3 +135,54 @@ test = pd.merge(test, trans_agg, on = ['store_nbr', 'month', 'day'], how = 'left
 store_dummies = pd.get_dummies(test['store_nbr'])
 store_dummies.columns = ['store_' + str(i) for i in range(1, (store_dummies.shape[1] + 1))]
 test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], axis = 1)
+
+#######################
+## Running 5-fold CV ##
+#######################
+
+def five_fold_CV():
+    
+    
+def five_fold_CV_help():
+    
+    kf = KFold(n_splits = 5, shuffle = True, random_state = 888)
+    score_list_lgb = []
+    test_preds_lgb = []
+    fold = 1
+
+# for train_index, test_index in kf.split(X, Y, groups = X.year):
+for train_index, test_index in kf.split(X, Y):
+    
+    ## Splitting the data
+    X_train , X_val = X.iloc[train_index], X.iloc[test_index]  
+    Y_train, Y_val = Y.iloc[train_index], Y.iloc[test_index]    
+    
+    print("X_train shape is :", X_train.shape, "X_val shape is", X_val.shape)
+    y_pred_list = []
+    
+    model_lgb = LGBMRegressor(n_estimators = 5000, 
+                              learning_rate = 0.01,
+                              num_leaves = 50,
+                              max_depth = 17, 
+                              lambda_l1 = 3, 
+                              lambda_l2 = 1, 
+                              bagging_fraction = 0.95, 
+                              feature_fraction = 0.96)
+
+    model = model_lgb.fit(X_train, Y_train)
+    result = model_lgb.predict(X_val)
+    
+    result = pd.DataFrame(result)
+    result.iloc[:, 0] = [0 if i <= 0 else i for i in result.iloc[:,0]]
+    
+    score = np.sqrt(mean_squared_log_error(Y_val, result))
+    print('Fold ', str(fold), ' result is:', score, '\n')
+    score_list_lgb.append(score)
+    
+    test_preds = model_lgb.predict(test)
+    test_preds = np.where(test_preds < 0, 0, test_preds)
+    test_preds_lgb.append(test_preds)
+    fold = fold + 1
+
+t2 = time.time()
+

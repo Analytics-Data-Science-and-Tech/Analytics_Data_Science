@@ -142,6 +142,9 @@ test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], 
 
 def five_fold_CV(X, Y):
     
+    for i in range(0, 5):
+        
+        ## add more stuff here
     
 def five_fold_CV_help(X, Y):
     

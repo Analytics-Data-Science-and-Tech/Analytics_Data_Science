@@ -144,7 +144,9 @@ def five_fold_CV(X, Y, test):
     
     for i in range(0, 5):
         
-        ## add more stuff here
+        print('-- Running CV run ', str(i), ' --')
+        
+        
     
 def five_fold_CV_help(X, Y, test):
     

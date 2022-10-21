@@ -140,13 +140,15 @@ test = pd.concat([test.drop(columns = ['store_nbr'], axis = 1), store_dummies], 
 ## Running 5-fold CV ##
 #######################
 
-def five_fold_CV(X, Y):
+def five_fold_CV(X, Y, test):
     
     for i in range(0, 5):
         
-        ## add more stuff here
+        print('-- Running CV run ', str(i), ' --')
+        
+        
     
-def five_fold_CV_help(X, Y):
+def five_fold_CV_help(X, Y, test):
     
     kf = KFold(n_splits = 5, shuffle = True)
     score_list_lgb = []

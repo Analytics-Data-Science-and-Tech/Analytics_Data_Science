@@ -31,10 +31,10 @@ test = preds_df[preds_df['target'].isnull()]
 ## Reading logloss data 
 logloss_data = pd.read_csv('logloss_data.csv')
 
-X = train[logloss_data['File'][0:200].values]
+X = train[logloss_data['File'][0:500].values]
 Y = train['target']
 
-test_new = test[logloss_data['File'][0:200].values]
+test_new = test[logloss_data['File'][0:500].values]
 
 ## Defining list to store results
 logit_results, test_preds_logit = list(), list()
@@ -72,4 +72,4 @@ print(test_preds_logit.head())
 submission['pred'] = test_preds_logit
 print(submission.head())
 
-submission.to_csv('submission_logistic_liblinear_l1_200.csv', index = False)
+submission.to_csv('submission_logistic_liblinear_l1_500.csv', index = False)

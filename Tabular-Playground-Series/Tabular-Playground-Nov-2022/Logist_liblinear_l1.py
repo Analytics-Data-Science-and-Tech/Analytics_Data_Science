@@ -19,7 +19,7 @@ file_object_1 = bucket_object_1.get()
 file_content_stream_1 = file_object_1.get('Body')
 
 ## Reading data-files
-submission = pd.read_parquet(file_content_stream_1)
+submission = pd.read_csv(file_content_stream_1)
 df = pd.read_parquet('s3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/preds_concat_gzip.parquet', engine = 'fastparquet')
 
 ## train and test

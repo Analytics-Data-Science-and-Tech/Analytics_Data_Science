@@ -62,10 +62,8 @@ for train_ix, test_ix in kfold.split(X, Y):
     X_train, X_test = X.iloc[train_ix], X.iloc[test_ix]
     Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
 
-    ## Building model
-    logit_md = LogisticRegression(solver = 'liblinear', penalty = 'l1').fit(X_train, Y_train)
-        
     ## Predicting on test
+    naive_pred
     logit_pred = logit_md.predict_proba(X_test)[:, 1]
     score = log_loss(Y_test, logit_pred)
     logit_results.append(score)

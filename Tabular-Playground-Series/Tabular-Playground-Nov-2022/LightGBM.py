@@ -49,8 +49,7 @@ for train_ix, test_ix in kfold.split(X, Y):
     Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
 
     ## Building model
-    lgb_md = LGBMClassifier(device = 'gpu',
-                            n_estimators = 1000, 
+    lgb_md = LGBMClassifier(n_estimators = 1000, 
                             learning_rate = 0.01,
                             num_leaves = 50,
                             max_depth = 17, 

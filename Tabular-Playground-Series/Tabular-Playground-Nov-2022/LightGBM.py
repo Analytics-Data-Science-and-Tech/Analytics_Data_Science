@@ -29,12 +29,21 @@ train = preds_df[preds_df['target'].notnull()]
 test = preds_df[preds_df['target'].isnull()] 
 
 ## Reading logloss data 
-logloss_data = pd.read_csv('logloss_data.csv')
+logloss_data = pd.read_csv('scores_df.csv')
+logloss_data = logloss_data.sort_values(by = 'split_score', ascending = False)
+# logloss_data = logloss_data.sort_values(by = 'gain_score', ascending = False)
+# logloss_data = pd.read_csv('logloss_data.csv')
 
-X = train[logloss_data['File'][0:500].values]
+# X = train[logloss_data['File'][0:100].values]
+# Y = train['target']
+
+# test_new = test[logloss_data['File'][0:100].values]
+
+X = train[logloss_data['feature'][0:300].values] 
 Y = train['target']
 
-test_new = test[logloss_data['File'][0:500].values]
+test_new = test[logloss_data['feature'][0:300].values] 
+
 
 ## Defining list to store results
 lgb_results, test_preds_lgb = list(), list()
@@ -79,4 +88,4 @@ print(test_preds_lgb.head(5))
 submission['pred'] = test_preds_lgb
 print(submission.head())
 
-submission.to_csv('submission_LightGBM_500.csv', index = False)
+# submission.to_csv('submission_LightGBM_300_2.csv', index = False)

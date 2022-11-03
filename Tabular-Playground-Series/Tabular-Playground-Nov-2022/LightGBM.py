@@ -7,7 +7,7 @@ import seaborn as sns
 
 from sklearn.metrics import log_loss
 from sklearn.model_selection import StratifiedKFold
-from sklearn.linear_model import LogisticRegression
+from lightgbm import LGBMClassifier
 
 s3 = boto3.resource('s3')
 bucket_name = 'analytics-data-science-competitions'

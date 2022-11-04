@@ -88,4 +88,4 @@ print(test_preds_lgb.head(5))
 submission['pred'] = test_preds_lgb
 print(submission.head())
 
-# submission.to_csv('submission_LightGBM_300_2.csv', index = False)
+submission.to_csv('submission_LightGBM_300_split_1.csv', index = False)

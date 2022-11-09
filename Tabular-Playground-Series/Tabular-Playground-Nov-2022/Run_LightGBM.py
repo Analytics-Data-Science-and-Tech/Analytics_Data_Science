@@ -63,7 +63,7 @@ test_new = test[to_select.values]
 
 CV_scores = list()    
     
-for i in range(0, 2):
+for i in range(0, 500):
     
     print('Working in', i, ' Run')
     run = Run_LightGBM(X, Y, test_new, submission)

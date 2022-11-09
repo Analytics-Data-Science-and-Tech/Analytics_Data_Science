@@ -5,7 +5,7 @@ from sklearn.metrics import log_loss
 from sklearn.model_selection import StratifiedKFold
 from lightgbm import LGBMClassifier
 
-def Run_LightGBM(X, Y):
+def Run_LightGBM(X, Y, test_new, submission):
 
     ## Defining list to store results
     lgb_results = list()
@@ -82,5 +82,6 @@ def Run_LightGBM(X, Y):
     pred4 = w4*test_preds_lgb_fold_4[0]
     pred5 = w4*test_preds_lgb_fold_5[0]
 
-submission['pred'] = pred1 + pred2 + pred3 + pred4 + pred5
-submission.to_csv('s3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/LightGBM_Preds/submission_1.csv', index = False)
+    submission['pred'] = pred1 + pred2 + pred3 + pred4 + pred5
+    
+    return [np.mean(lgb_results), submission]

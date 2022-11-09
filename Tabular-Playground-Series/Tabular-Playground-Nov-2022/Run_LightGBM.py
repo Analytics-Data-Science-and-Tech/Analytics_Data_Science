@@ -25,11 +25,93 @@ bucket_object_2 = bucket.Object(file_key_2)
 file_object_2 = bucket_object_2.get()
 file_content_stream_2 = file_object_2.get('Body')
 
-## Reading data-files
+########################
+## Reading data-files ##
+########################
+
 submission = pd.read_csv(file_content_stream_1)
 y_true = pd.read_csv(file_content_stream_2)
 df = pd.read_parquet('s3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/preds_logit_concat_gzip.parquet', engine = 'fastparquet')
+lasso_scores = pd.read_csv('lasso_scores_logit.csv')
 
-## Consolidating the data
+############################
+## Consolidating the data ##
+############################
+
 preds = pd.merge(df, y_true, on = 'id', how = 'left')
+
+############################
+## train and test datsets ##
+############################
+
+train = preds[preds['label'].notnull()]
+train['label'] = train['label'].astype(int)
+
+test = preds[preds['label'].isnull()] 
+
+##############
+## Modeling ##
+##############
+
+X = train[to_select.values]
+Y = train['label']
+
+test_new = test[to_select.values]
+
+## Defining list to store results
+lgb_results = list()
+test_preds_lgb_fold_1 = list() 
+test_preds_lgb_fold_2 = list()
+test_preds_lgb_fold_3 = list()
+test_preds_lgb_fold_4 = list()
+test_preds_lgb_fold_5 = list()
+
+fold = 1
+kfold = StratifiedKFold(n_splits = 5, shuffle = True)
+        
+for train_ix, test_ix in kfold.split(X, Y):
+    
+    ## Splitting the data 
+    X_train, X_test = X.iloc[train_ix], X.iloc[test_ix]
+    Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
+
+    ## Building model
+    lgb_md = LGBMClassifier(n_estimators = 1000, 
+                            learning_rate = 0.01,
+                            num_leaves = 50,
+                            max_depth = 17, 
+                            lambda_l1 = 3, 
+                            lambda_l2 = 1, 
+                            bagging_fraction = 0.4, 
+                            feature_fraction = 0.4).fit(X_train, Y_train)
+        
+    ## Predicting on test
+    lgb_pred = lgb_md.predict_proba(X_test)[:, 1]
+    score = log_loss(Y_test, lgb_pred)
+    lgb_results.append(score)
+        
+    print('Fold ', str(fold), ' result is:', score, '\n')
+    
+    if (fold == 1):
+        test_preds_lgb_fold_1.append(lgb_md.predict_proba(test_new)[:, 1])
+        
+    if (fold == 2):
+        test_preds_lgb_fold_2.append(lgb_md.predict_proba(test_new)[:, 1])
+        
+    if (fold == 3):
+        test_preds_lgb_fold_3.append(lgb_md.predict_proba(test_new)[:, 1])
+        
+    if (fold == 4):
+        test_preds_lgb_fold_4.append(lgb_md.predict_proba(test_new)[:, 1])
+        
+    if (fold == 5):
+        test_preds_lgb_fold_5.append(lgb_md.predict_proba(test_new)[:, 1])
+    
+    fold +=1
+
+print('The average log-loss over 5-fold CV is', np.mean(lgb_results))
+
+##########################################
+## Weighted average of fold predictions ##
+##########################################
 

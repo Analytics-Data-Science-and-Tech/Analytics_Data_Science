@@ -56,9 +56,9 @@ def Run_LightGBM(X, Y, test_new, submission):
         if (fold == 5):
             test_preds_lgb_fold_5.append(lgb_md.predict_proba(test_new)[:, 1])
 
-        fold +=1
+        fold += 1
 
-    print('The average log-loss over 5-fold CV is', np.mean(lgb_results))
+    print('The average log-loss over 5-folds CV is', np.mean(lgb_results))
 
     ##########################################
     ## Weighted average of fold predictions ##

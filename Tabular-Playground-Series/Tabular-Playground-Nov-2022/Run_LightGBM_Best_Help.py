@@ -37,11 +37,10 @@ def Run_LightGBM(X, Y, test_new, submission):
         ## Predicting on test
         lgb_pred = lgb_md.predict_proba(X_test)[:, 1]
         score = log_loss(Y_test, lgb_pred)
-        lgb_results.append(score)
         
         if (score < 0.52):
-
-            print('Fold ', str(fold), ' result is:', score, '\n')
+            
+            lgb_results.append(score)
 
             if (fold == 1):
                 test_preds_lgb_fold_1.append(lgb_md.predict_proba(test_new)[:, 1])
@@ -57,20 +56,42 @@ def Run_LightGBM(X, Y, test_new, submission):
 
             if (fold == 5):
                 test_preds_lgb_fold_5.append(lgb_md.predict_proba(test_new)[:, 1])
+                
+        else:
+            
+            lgb_results.append(0)
+            
+            if (fold == 1):
+                test_preds_lgb_fold_1.append(lgb_md.predict_proba(test_new)[:, 1])
+
+            if (fold == 2):
+                test_preds_lgb_fold_2.append(lgb_md.predict_proba(test_new)[:, 1])
+
+            if (fold == 3):
+                test_preds_lgb_fold_3.append(lgb_md.predict_proba(test_new)[:, 1])
+
+            if (fold == 4):
+                test_preds_lgb_fold_4.append(lgb_md.predict_proba(test_new)[:, 1])
+
+            if (fold == 5):
+                test_preds_lgb_fold_5.append(lgb_md.predict_proba(test_new)[:, 1])
+            
 
         fold += 1
 
-    print('The average log-loss over 5-fold CV is', np.mean(lgb_results))
+    array_scores = np.array(lgb_results)    
+    print('The average log-loss over 5-fold CV is', np.mean(array_scores[array_scores > 0]))
 
     ##########################################
     ## Weighted average of fold predictions ##
     ##########################################
-
-    w1 = 1/ lgb_results[0]
-    w2 = 1/ lgb_results[1]
-    w3 = 1/ lgb_results[2]
-    w4 = 1/ lgb_results[3]
-    w5 = 1/ lgb_results[4]
+    
+    w_init = w_fun(lgb_results)
+    w1 = w_init[0]
+    w2 = w_init[1]
+    w3 = w_init[2]
+    w4 = w_init[3]
+    w5 = w_init[4]
     w_tot = w1 + w2 + w3+ w4 + w5
     w1 = w1 / w_tot
     w2 = w2 / w_tot
@@ -87,3 +108,21 @@ def Run_LightGBM(X, Y, test_new, submission):
     submission['pred'] = pred1 + pred2 + pred3 + pred4 + pred5
     
     return [np.mean(lgb_results), submission]
+
+
+def w_fun(scores):
+    
+    w1 = w_fun_help(scores[0])
+    w2 = w_fun_help(scores[1])
+    w3 = w_fun_help(scores[2])
+    w4 = w_fun_help(scores[3])
+    w5 = w_fun_help(scores[4])
+    
+    return [w1, w2, w3, w4, w5]
+
+
+def w_fun_help(value): 
+    if (value > 0):        
+        return 1/value  
+    else:
+        return 0

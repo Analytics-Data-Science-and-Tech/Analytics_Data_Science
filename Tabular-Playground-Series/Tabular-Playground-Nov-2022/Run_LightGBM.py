@@ -33,6 +33,7 @@ submission = pd.read_csv(file_content_stream_1)
 y_true = pd.read_csv(file_content_stream_2)
 df = pd.read_parquet('s3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/preds_logit_concat_gzip.parquet', engine = 'fastparquet')
 lasso_scores = pd.read_csv('lasso_scores_logit.csv')
+to_select = lasso_scores['Feature'][0:50]
 
 ############################
 ## Consolidating the data ##

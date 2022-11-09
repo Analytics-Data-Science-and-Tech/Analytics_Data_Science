@@ -134,6 +134,7 @@ pred4 = w4*test_preds_lgb_fold_4[0]
 pred5 = w4*test_preds_lgb_fold_5[0]
 
 submission['pred'] = pred1 + pred2 + pred3 + pred4 + pred5
-
+submission.to_csv('s3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/LightGBM_Preds/submission_1.csv', index = False)
+                  
 
 

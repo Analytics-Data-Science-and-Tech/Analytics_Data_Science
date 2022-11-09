@@ -107,7 +107,7 @@ def Run_LightGBM_Best(X, Y, test_new, submission):
 
     submission['pred'] = pred1 + pred2 + pred3 + pred4 + pred5
     
-    return [np.mean(lgb_results), submission]
+    return [np.mean(array_scores[array_scores > 0]), sum(array_scores > 0), submission]
 
 
 def w_fun(scores):

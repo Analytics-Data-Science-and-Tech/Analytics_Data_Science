@@ -78,6 +78,7 @@ for i in range(0, 500):
     
     else: 
         
+        continue
         
     
 CV_scores = pd.DataFrame({'Run': [i for i in range(0, 500)], 'CV_score': CV_scores, 'Numb_Folds': number})

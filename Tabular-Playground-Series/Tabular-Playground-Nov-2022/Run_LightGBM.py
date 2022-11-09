@@ -67,7 +67,7 @@ for i in range(0, 2):
     
     print('Working in', i, ' Run')
     run = Run_LightGBM(X, Y, test_new, submission)
-    CV_score.append(run[0])
+    CV_scores.append(run[0])
     location_name = 's3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/LightGBM_Preds/' + 'LightGBM_run_' + str(i) + '.csv'
     run[1].to_csv(location_name, index = False)
     

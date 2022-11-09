@@ -64,7 +64,7 @@ test_new = test[to_select.values]
 CV_scores = list()
 number = list()
     
-for i in range(0, 5):
+for i in range(0, 500):
     
     print('Working in', i, ' Run')
     run = Run_LightGBM_Best(X, Y, test_new, submission)
@@ -74,6 +74,6 @@ for i in range(0, 5):
     run[2].to_csv(location_name, index = False)
     
     
-CV_scores = pd.DataFrame({'Run': [i for i in range(0, 5)], 'CV_score': CV_scores, 'Numb_Folds': number})
+CV_scores = pd.DataFrame({'Run': [i for i in range(0, 500)], 'CV_score': CV_scores, 'Numb_Folds': number})
 CV_scores.to_csv('s3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/LightGBM_Best_Preds/CV_scores.csv', index = False)
 

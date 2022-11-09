@@ -61,17 +61,19 @@ Y = train['label']
 
 test_new = test[to_select.values]
 
-CV_scores = list()    
+CV_scores = list()
+number = list()
     
-for i in range(0, 500):
+for i in range(0, 5):
     
     print('Working in', i, ' Run')
-    run = Run_LightGBM(X, Y, test_new, submission)
+    run = Run_LightGBM_Best(X, Y, test_new, submission)
     CV_scores.append(run[0])
+    number.append(run[1])
     location_name = 's3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/LightGBM_Best_Preds/' + 'LightGBM_run_' + str(i) + '.csv'
-    run[1].to_csv(location_name, index = False)
+    run[2].to_csv(location_name, index = False)
     
     
-CV_scores = pd.DataFrame({'Run': [i for i in range(0, 500)], 'CV_score': CV_scores})
+CV_scores = pd.DataFrame({'Run': [i for i in range(0, 5)], 'CV_score': CV_scores, 'Numb_Folds': number})
 CV_scores.to_csv('s3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/LightGBM_Best_Preds/CV_scores.csv', index = False)
 

@@ -72,6 +72,6 @@ for i in range(0, 500):
     run[1].to_csv(location_name, index = False)
     
     
-CV_scores = pd.DataFrame({'Run': [i for i in range(0, 2)], 'CV_score': CV_scores})
+CV_scores = pd.DataFrame({'Run': [i for i in range(0, 500)], 'CV_score': CV_scores})
 CV_scores.to_csv('s3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/LightGBM_Preds/CV_scores.csv', index = False)
 

@@ -11,7 +11,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.decomposition import PCA
 from lightgbm import LGBMClassifier
 
-from Run_LightGBM_Help import Run_LightGBM
+from Run_LightGBM_PCA_Help import Run_LightGBM
 
 s3 = boto3.resource('s3')
 bucket_name = 'analytics-data-science-competitions'
@@ -68,7 +68,7 @@ test_new = pd.DataFrame(pca.fit_transform(test_new))
 
 CV_scores = list()    
     
-for i in range(0, 10):
+for i in range(0, 5):
     
     print('Working in', i, ' Run')
     run = Run_LightGBM(X, Y, test_new, submission)

@@ -5,7 +5,7 @@ from sklearn.metrics import log_loss
 from sklearn.model_selection import StratifiedKFold
 from lightgbm import LGBMClassifier
 
-def Run_LightGBM_Best(X, Y, test_new, submission):
+def Run_LightGBM_Best(X, Y, test_new, submission, i):
 
     ## Defining list to store results
     lgb_results = list()
@@ -16,7 +16,7 @@ def Run_LightGBM_Best(X, Y, test_new, submission):
     test_preds_lgb_fold_5 = list()
 
     fold = 1
-    kfold = StratifiedKFold(n_splits = 5, shuffle = True)
+    kfold = StratifiedKFold(n_splits = 5, shuffle = True, random_state = i)
 
     for train_ix, test_ix in kfold.split(X, Y):
 
@@ -32,7 +32,8 @@ def Run_LightGBM_Best(X, Y, test_new, submission):
                                 lambda_l1 = 3, 
                                 lambda_l2 = 1, 
                                 bagging_fraction = 0.4, 
-                                feature_fraction = 0.4).fit(X_train, Y_train)
+                                feature_fraction = 0.4,
+                                random_state = i).fit(X_train, Y_train)
 
         ## Predicting on test
         lgb_pred = lgb_md.predict_proba(X_test)[:, 1]
@@ -106,7 +107,7 @@ def Run_LightGBM_Best(X, Y, test_new, submission):
         pred2 = w2*test_preds_lgb_fold_2[0]
         pred3 = w3*test_preds_lgb_fold_3[0]
         pred4 = w4*test_preds_lgb_fold_4[0]
-        pred5 = w4*test_preds_lgb_fold_5[0]
+        pred5 = w5*test_preds_lgb_fold_5[0]
 
         submission['pred'] = pred1 + pred2 + pred3 + pred4 + pred5
 
@@ -130,6 +131,6 @@ def w_fun(scores):
 
 def w_fun_help(value): 
     if (value > 0):        
-        return 1/value  
+        return 1 / value  
     else:
         return 0

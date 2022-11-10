@@ -31,8 +31,8 @@ def Run_LightGBM(X, Y, test_new, submission):
                                 max_depth = 17, 
                                 lambda_l1 = 3, 
                                 lambda_l2 = 1, 
-                                bagging_fraction = 0.8, 
-                                feature_fraction = 0.8).fit(X_train, Y_train)
+                                bagging_fraction = 0.7, 
+                                feature_fraction = 0.7).fit(X_train, Y_train)
 
         ## Predicting on test
         lgb_pred = lgb_md.predict_proba(X_test)[:, 1]

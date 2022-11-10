@@ -67,7 +67,7 @@ number = list()
 for i in range(0, 500):
     
     print('Working in', i, ' Run')
-    run = Run_LightGBM_Best(X, Y, test_new, submission)
+    run = Run_LightGBM_Best(X, Y, test_new, submission, i)
     
     if (len(run) > 0):
     

@@ -5,7 +5,7 @@ from sklearn.metrics import log_loss
 from sklearn.model_selection import StratifiedKFold
 from lightgbm import LGBMClassifier
 
-def Run_LightGBM_Best(X, Y, test_new, submission, i):
+def Run_LightGBM_Best_Seed(X, Y, test_new, submission, i):
 
     ## Defining list to store results
     lgb_results = list()

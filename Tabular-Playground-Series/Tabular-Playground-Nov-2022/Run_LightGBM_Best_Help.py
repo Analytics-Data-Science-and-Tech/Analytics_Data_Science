@@ -93,21 +93,28 @@ def Run_LightGBM_Best(X, Y, test_new, submission):
     w4 = w_init[3]
     w5 = w_init[4]
     w_tot = w1 + w2 + w3+ w4 + w5
-    w1 = w1 / w_tot
-    w2 = w2 / w_tot
-    w3 = w3 / w_tot
-    w4 = w4 / w_tot
-    w5 = w5 / w_tot
-
-    pred1 = w1*test_preds_lgb_fold_1[0]
-    pred2 = w2*test_preds_lgb_fold_2[0]
-    pred3 = w3*test_preds_lgb_fold_3[0]
-    pred4 = w4*test_preds_lgb_fold_4[0]
-    pred5 = w4*test_preds_lgb_fold_5[0]
-
-    submission['pred'] = pred1 + pred2 + pred3 + pred4 + pred5
     
-    return [np.mean(array_scores[array_scores > 0]), sum(array_scores > 0), submission]
+    if (w_tot > 0):
+        
+        w1 = w1 / w_tot
+        w2 = w2 / w_tot
+        w3 = w3 / w_tot
+        w4 = w4 / w_tot
+        w5 = w5 / w_tot
+
+        pred1 = w1*test_preds_lgb_fold_1[0]
+        pred2 = w2*test_preds_lgb_fold_2[0]
+        pred3 = w3*test_preds_lgb_fold_3[0]
+        pred4 = w4*test_preds_lgb_fold_4[0]
+        pred5 = w4*test_preds_lgb_fold_5[0]
+
+        submission['pred'] = pred1 + pred2 + pred3 + pred4 + pred5
+
+        return [np.mean(array_scores[array_scores > 0]), sum(array_scores > 0), submission]
+    
+    else:
+        
+        return []
 
 
 def w_fun(scores):

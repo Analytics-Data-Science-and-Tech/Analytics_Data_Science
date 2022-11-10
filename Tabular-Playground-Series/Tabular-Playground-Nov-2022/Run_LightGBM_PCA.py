@@ -8,9 +8,10 @@ import seaborn as sns
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
 from sklearn.model_selection import StratifiedKFold
+from sklearn.decomposition import PCA
 from lightgbm import LGBMClassifier
 
-from Run_LightGBM_Help import Run_LightGBM
+from Run_LightGBM_PCA_Help import Run_LightGBM
 
 s3 = boto3.resource('s3')
 bucket_name = 'analytics-data-science-competitions'
@@ -35,7 +36,7 @@ submission = pd.read_csv(file_content_stream_1)
 y_true = pd.read_csv(file_content_stream_2)
 df = pd.read_parquet('s3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/preds_logit_concat_gzip.parquet', engine = 'fastparquet')
 lasso_scores = pd.read_csv('lasso_scores_logit.csv')
-to_select = lasso_scores['Feature'][0:50]
+to_select = lasso_scores['Feature'][lasso_scores['abs_coef'] > 0]
 
 ############################
 ## Consolidating the data ##
@@ -61,9 +62,13 @@ Y = train['label']
 
 test_new = test[to_select.values]
 
+pca = PCA(n_components = 50).fit(X)
+X = pd.DataFrame(pca.fit_transform(X))
+test_new = pd.DataFrame(pca.fit_transform(test_new))
+
 CV_scores = list()    
     
-for i in range(0, 10):
+for i in range(0, 5):
     
     print('Working in', i, ' Run')
     run = Run_LightGBM(X, Y, test_new, submission)

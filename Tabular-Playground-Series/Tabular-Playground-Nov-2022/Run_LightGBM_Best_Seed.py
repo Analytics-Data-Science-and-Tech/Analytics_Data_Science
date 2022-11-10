@@ -10,7 +10,7 @@ from sklearn.metrics import log_loss
 from sklearn.model_selection import StratifiedKFold
 from lightgbm import LGBMClassifier
 
-from Run_LightGBM_Best_Help import Run_LightGBM_Best
+from Run_LightGBM_Best_Help_Seed import Run_LightGBM_Best_Seed
 
 s3 = boto3.resource('s3')
 bucket_name = 'analytics-data-science-competitions'

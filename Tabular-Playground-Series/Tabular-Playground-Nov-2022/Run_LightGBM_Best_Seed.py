@@ -73,7 +73,7 @@ for i in range(0, 500):
     
         CV_scores.append(run[0])
         number.append(run[1])
-        location_name = 's3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/LightGBM_Best_Preds/' + 'LightGBM_run_' + str(i) + '.csv'
+        location_name = 's3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/LightGBM_Best_Preds_Seed/' + 'LightGBM_run_' + str(i) + '.csv'
         run[2].to_csv(location_name, index = False)
     
     else: 
@@ -83,5 +83,5 @@ for i in range(0, 500):
 
     
 CV_scores = pd.DataFrame({'Run': [i for i in range(0, 500)], 'CV_score': CV_scores, 'Numb_Folds': number})
-CV_scores.to_csv('s3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/LightGBM_Best_Preds/CV_scores.csv', index = False)
+CV_scores.to_csv('s3://analytics-data-science-competitions/Tabular-Playground-Series/Tabular-Playground-Nov-2022/LightGBM_Best_Preds_Seed/CV_scores.csv', index = False)
 

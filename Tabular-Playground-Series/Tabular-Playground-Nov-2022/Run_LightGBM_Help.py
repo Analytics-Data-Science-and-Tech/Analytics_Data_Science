@@ -80,7 +80,7 @@ def Run_LightGBM(X, Y, test_new, submission):
     pred2 = w2*test_preds_lgb_fold_2[0]
     pred3 = w3*test_preds_lgb_fold_3[0]
     pred4 = w4*test_preds_lgb_fold_4[0]
-    pred5 = w4*test_preds_lgb_fold_5[0]
+    pred5 = w5*test_preds_lgb_fold_5[0]
 
     submission['pred'] = pred1 + pred2 + pred3 + pred4 + pred5
     

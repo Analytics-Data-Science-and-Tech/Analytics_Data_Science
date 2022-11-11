@@ -16,7 +16,7 @@ def Run_LightGBM(X, Y, test_new, submission):
     test_preds_lgb_fold_5 = list()
 
     fold = 1
-    kfold = StratifiedKFold(n_splits = 5, shuffle = True, random_state = 409)
+    kfold = StratifiedKFold(n_splits = 5, shuffle = True, random_state = 396)
 
     for train_ix, test_ix in kfold.split(X, Y):
 
@@ -33,7 +33,7 @@ def Run_LightGBM(X, Y, test_new, submission):
                                 lambda_l2 = 1, 
                                 bagging_fraction = 0.4, 
                                 feature_fraction = 0.4,
-                                random_state = 409).fit(X_train, Y_train)
+                                random_state = 396).fit(X_train, Y_train)
 
         ## Predicting on test
         lgb_pred = lgb_md.predict_proba(X_test)[:, 1]

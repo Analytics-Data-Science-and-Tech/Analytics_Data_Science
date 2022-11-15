@@ -25,13 +25,15 @@ def Run_LightGBM(X, Y, test_new, submission):
         Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
 
         ## Building model
-        lgb_md = LGBMClassifier(n_estimators = 1000, 
+        lgb_md = LGBMClassifier(objective = 'binary',
+                                metric = 'binary_logloss',
+                                n_estimators = 1000, 
                                 learning_rate = 0.01,
                                 num_leaves = 50,
                                 max_depth = 17, 
                                 lambda_l1 = 3, 
                                 lambda_l2 = 1, 
-                                bagging_fraction = 0.4, 
+                                bagging_fraction = 0.9, 
                                 feature_fraction = 0.4,
                                 random_state = 396).fit(X_train, Y_train)
 

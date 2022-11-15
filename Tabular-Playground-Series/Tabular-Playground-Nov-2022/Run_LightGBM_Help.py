@@ -26,7 +26,7 @@ def Run_LightGBM(X, Y, test_new, submission):
 
         ## Building model
         lgb_md = LGBMClassifier(objective = 'binary',
-                                metric = 'binary_logloss'
+                                metric = 'binary_logloss',
                                 n_estimators = 1000, 
                                 learning_rate = 0.01,
                                 num_leaves = 50,

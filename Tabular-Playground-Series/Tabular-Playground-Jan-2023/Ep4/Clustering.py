@@ -51,7 +51,7 @@ scaler = MinMaxScaler()
 X_trans = scaler.fit_transform(X)
 
 ## Defining the number of clusters to be considered
-krange = list(range(2, 5))
+krange = list(range(2, 100))
 
 ## Defining lists to store scores
 CH_scores, DB_scores, silhouette_scores = list(), list(), list()
@@ -64,8 +64,10 @@ for i in krange:
     cluster_assignments = cluster_md.labels_
     inertias.append(cluster_md.inertia_)
     
+plt.figure(figsize = (10, 8))
+    
 plt.plot(krange, inertias)
 plt.xlabel('Number of Clusters (k)')
 plt.ylabel('Custer Inertia')
 plt.show()
-fig.savefig('V1_V28_clusters.pdf')
+plt.savefig('V1_V28_clusters.pdf');

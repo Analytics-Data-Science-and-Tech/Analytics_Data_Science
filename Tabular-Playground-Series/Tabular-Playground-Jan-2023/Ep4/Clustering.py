@@ -45,11 +45,13 @@ train = pd.read_csv(file_content_stream_1)
 test = pd.read_csv(file_content_stream_2)
 submission = pd.read_csv(file_content_stream_3)
 
+X = train[train.columns[2:30]]
+
 scaler = MinMaxScaler()
 X_trans = scaler.fit_transform(X)
 
 ## Defining the number of clusters to be considered
-krange = list(range(2, 4))
+krange = list(range(2, 200))
 
 ## Defining lists to store scores
 CH_scores, DB_scores, silhouette_scores = list(), list(), list()
@@ -62,8 +64,13 @@ for i in krange:
     cluster_assignments = cluster_md.labels_
     inertias.append(cluster_md.inertia_)
     
+plt.figure(figsize = (10, 8))
+
+data_out = pd.DataFrame({'cluster': krange, 'inertia': inertias})
+data_out.to_csv('cluster_inertias.csv', index = False)
+    
 plt.plot(krange, inertias)
 plt.xlabel('Number of Clusters (k)')
 plt.ylabel('Custer Inertia')
 plt.show()
-fig.savefig('V1_V28_clusters.pdf')
+plt.savefig('V1_V28_clusters.pdf');

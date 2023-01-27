@@ -51,7 +51,7 @@ scaler = MinMaxScaler()
 X_trans = scaler.fit_transform(X)
 
 ## Defining the number of clusters to be considered
-krange = list(range(2, 200))
+krange = list(range(200, 300))
 
 ## Defining lists to store scores
 CH_scores, DB_scores, silhouette_scores = list(), list(), list()
@@ -67,7 +67,7 @@ for i in krange:
 plt.figure(figsize = (10, 8))
 
 data_out = pd.DataFrame({'cluster': krange, 'inertia': inertias})
-data_out.to_csv('cluster_inertias.csv', index = False)
+data_out.to_csv('cluster_inertias_200.csv', index = False)
     
 plt.plot(krange, inertias)
 plt.xlabel('Number of Clusters (k)')

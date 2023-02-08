@@ -123,11 +123,10 @@ class Objective:
 
         scores = []
 
-        skf = KFold(n_splits = 5, shuffle = True, random_state = seed)
+        skf = KFold(n_splits = 5, shuffle = True, random_state = self.seed)
 
         for fold, (train_idx, valid_idx) in enumerate(skf.split(X, Y)):
 
-            print(fold, end = ' ')
             X_train, X_valid = X.iloc[train_idx], X.iloc[valid_idx]
             Y_train , Y_valid = Y.iloc[train_idx] , Y.iloc[valid_idx]
 
@@ -141,15 +140,66 @@ class Objective:
             coef = optR.coefficients()
             preds_valid = optR.predict(preds_valid, coef).astype(int)
 
-            score = cohen_kappa_score(Y_valid,  preds_valid, weights = "quadratic")
+            score = cohen_kappa_score(Y_valid,  preds_valid, weights = 'quadratic')
             scores.append(score)
 
         return np.mean(scores)
     
 ## Defining number of runs and seed
-RUNS = 5
+RUNS = 50
 SEED = 1
+N_TRIALS = 50
 
-# Execute an optimization by using an `Objective` instance.
-study = optuna.create_study()
-study.optimize(Objective(SEED), n_trials = 1)
+# Execute an optimization
+study = optuna.create_study(direction = 'maximize')
+study.optimize(Objective(SEED), n_trials = N_TRIALS)
+
+
+XGB_cv_score = list()
+
+for i in range(RUNS):
+
+    XGB_cv_scores = list()
+    skf = KFold(n_splits = 5, random_state = SEED, shuffle = True)
+
+    for train_ix, test_ix in skf.split(X, Y):
+
+        ## Splitting the data 
+        X_train, X_test = X.iloc[train_ix], X.iloc[test_ix]
+        Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
+
+        ## Building RF model
+        XGB_md = XGBRegressor(**study.best_trial.params, 
+                              random_state = i).fit(X_train, Y_train)
+
+        ## Predicting on X_test and test
+        XGB_pred_1 = XGB_md.predict(X_test)
+
+        ## Applying Optimal Rounder (using abhishek approach)
+        optR = OptimizedRounder()
+        optR.fit(XGB_md.predict(X_train), Y_train)
+        coef = optR.coefficients()
+        XGB_pred_1 = optR.predict(XGB_pred_1, coef).astype(int)
+
+        ## Computing weighted quadratic kappa
+        XGB_cv_scores.append(cohen_kappa_score(Y_test, XGB_pred_1, weights = 'quadratic'))
+
+    XGB_cv_score.append(np.mean(XGB_cv_scores))
+    
+## Identifying the best random_state
+rand_state = np.argmax(XGB_cv_score)
+
+## Building model in entire train dataset
+XGB_md = XGBRegressor(**study.best_trial.params, 
+                      random_state = rand_state).fit(X, Y)
+
+optR = OptimizedRounder()
+optR.fit(XGB_md.predict(X), Y)
+coef = optR.coefficients()
+XGB_pred = XGB_md.predict(test_md)
+XGB_pred = optR.predict(XGB_pred, coef).astype(int)
+
+submission['quality'] = XGB_pred
+
+file_name = 'XGB_Reg_FUll_Seed_' + str(SEED) + '.csv' 
+submission.to_csv(file_name, index = False)

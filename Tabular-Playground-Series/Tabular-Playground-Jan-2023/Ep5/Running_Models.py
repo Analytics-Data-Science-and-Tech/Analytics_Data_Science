@@ -62,3 +62,8 @@ Y = train['quality']
 
 test_md = test_md[['sulphate/density', 'alcohol_density', 'alcohol', 'sulphates', 'fixed acidity']]
 
+## Defining number of runs
+RUNS = 5
+
+study = optuna.create_study(direction = "maximize")
+study.optimize(objective, n_trials = 50, timeout = 3600)

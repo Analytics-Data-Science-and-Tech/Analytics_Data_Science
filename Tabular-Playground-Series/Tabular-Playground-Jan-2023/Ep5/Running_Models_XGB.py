@@ -2,6 +2,7 @@ import boto3
 import pandas as pd; pd.set_option('display.max_columns', 100)
 import numpy as np
 import scipy as sp
+from tqdm import tqdm
 from functools import partial
 from sklearn.model_selection import KFold
 from sklearn.metrics import cohen_kappa_score
@@ -157,7 +158,7 @@ study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
 XGB_cv_score = list()
 
-for i in range(RUNS):
+for i in tqdm(range(RUNS)):
 
     XGB_cv_scores = list()
     skf = KFold(n_splits = 5, random_state = SEED, shuffle = True)

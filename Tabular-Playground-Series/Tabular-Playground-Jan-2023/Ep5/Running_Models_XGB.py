@@ -147,7 +147,7 @@ class Objective:
         return np.mean(scores)
     
 ## Defining number of runs and seed
-RUNS = 50
+RUNS = 2
 SEED = 1
 N_TRIALS = 5
 

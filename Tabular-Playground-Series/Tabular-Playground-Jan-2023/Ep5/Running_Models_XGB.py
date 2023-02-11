@@ -147,14 +147,17 @@ class Objective:
         return np.mean(scores)
     
 ## Defining number of runs and seed
-RUNS = 2
+RUNS = 50
 SEED = 1
-N_TRIALS = 5
+N_TRIALS = 50
 
 # Execute an optimization
 study = optuna.create_study(direction = 'maximize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
+print('-----------------------------')
+print('Starting CV process')
+print('-----------------------------')
 
 XGB_cv_score = list()
 preds = list()
@@ -196,11 +199,12 @@ for i in tqdm(range(RUNS)):
     submission['quality'] = XGB_preds_test.astype(int)
 
 
-    file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + 'Run_' + str(i) + '.csv' 
+    file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Run_' + str(i) + '.csv' 
     submission.to_csv(file_name, index = False)
 
-    
+print('-----------------------------')    
 print('The process finished...')    
+print('-----------------------------')
 # ## Identifying the best random_state
 # rand_state = np.argmax(XGB_cv_score)
 

@@ -148,7 +148,7 @@ class Objective:
     
 ## Defining number of runs and seed
 RUNS = 50
-SEED = 1
+SEED = 42
 N_TRIALS = 50
 
 # Execute an optimization
@@ -184,8 +184,8 @@ for i in tqdm(range(RUNS)):
         
         ## Applying Optimal Rounder (using abhishek approach)
         optR = OptimizedRounder()
-    #     optR.fit(XGB_pred_1, Y_test)
-        optR.fit(XGB_pred_train, Y_train)
+        optR.fit(XGB_pred_1, Y_test)
+#         optR.fit(XGB_pred_train, Y_train)
         coef = optR.coefficients()
         XGB_pred_1 = optR.predict(XGB_pred_1, coef).astype(int)
         XGB_pred_2 = optR.predict(XGB_pred_2, coef).astype(int)

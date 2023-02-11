@@ -148,7 +148,7 @@ class Objective:
     
 ## Defining number of runs and seed
 RUNS = 50
-SEED = 42
+SEED = 1
 N_TRIALS = 50
 
 # Execute an optimization
@@ -156,11 +156,24 @@ study = optuna.create_study(direction = 'maximize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
 print('-----------------------------')
+print('Saving Optuna Hyper-Parameters')
+print('-----------------------------')
+
+
+optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Optuna_Hyperparameters_2.csv'
+optuna_hyper_params.to_csv(file_name, index = False)
+
+print('-----------------------------')
 print('Starting CV process')
 print('-----------------------------')
 
+
 XGB_cv_score = list()
 preds = list()
+
+CV_scores = pd.DataFrame({'Run': [i for i in range(1, (RUNS + 1))]})
+CV_scores['CV_Score'] = np.nan
 
 for i in tqdm(range(RUNS)):
 
@@ -184,8 +197,8 @@ for i in tqdm(range(RUNS)):
         
         ## Applying Optimal Rounder (using abhishek approach)
         optR = OptimizedRounder()
-        optR.fit(XGB_pred_1, Y_test)
-#         optR.fit(XGB_pred_train, Y_train)
+#         optR.fit(XGB_pred_1, Y_test)
+        optR.fit(XGB_pred_train, Y_train)
         coef = optR.coefficients()
         XGB_pred_1 = optR.predict(XGB_pred_1, coef).astype(int)
         XGB_pred_2 = optR.predict(XGB_pred_2, coef).astype(int)
@@ -193,15 +206,21 @@ for i in tqdm(range(RUNS)):
         ## Computing weighted quadratic kappa
         XGB_cv_scores.append(cohen_kappa_score(Y_test, XGB_pred_1, weights = 'quadratic'))
         preds.append(XGB_pred_2)
-        
-    print('The average roc-auc score over 5-folds (run 5 times) is:', np.mean(XGB_cv_scores))
+    
+    avg_score = np.mean(XGB_cv_scores)
+    print('The average oof weighted kappa score over 5-folds is:', avg_score)
+    CV_scores.loc[i, 'CV_Score'] = avg_score
+    
     XGB_preds_test = pd.DataFrame(preds).mode(axis = 0).loc[0, ]
     submission['quality'] = XGB_preds_test.astype(int)
 
 
-    file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Run_' + str(i) + '.csv' 
+    file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Run_' + str(i) + '_2.csv' 
     submission.to_csv(file_name, index = False)
 
+file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Run_' + str(i) + '_CV_Score_2.csv'
+CV_scores.to_csv(file_name, index = False)
+    
 print('-----------------------------')    
 print('The process finished...')    
 print('-----------------------------')

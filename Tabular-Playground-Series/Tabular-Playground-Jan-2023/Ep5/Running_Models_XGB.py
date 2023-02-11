@@ -47,10 +47,10 @@ test['alcohol_sulphate'] = test['alcohol'] * test['sulphates']
 
 test_md = test.copy()
 
-X = train[['sulphate/density', 'alcohol_density', 'alcohol', 'sulphates', 'fixed acidity']]
+X = train[['sulphate/density', 'alcohol_density', 'alcohol', 'sulphates']]
 Y = train['quality'] 
 
-test_md = test_md[['sulphate/density', 'alcohol_density', 'alcohol', 'sulphates', 'fixed acidity']]
+test_md = test_md[['sulphate/density', 'alcohol_density', 'alcohol', 'sulphates']]
 
 
 class OptimizedRounder(object):
@@ -149,7 +149,7 @@ class Objective:
 ## Defining number of runs and seed
 RUNS = 50
 SEED = 1
-N_TRIALS = 50
+N_TRIALS = 5
 
 # Execute an optimization
 study = optuna.create_study(direction = 'maximize')
@@ -157,6 +157,7 @@ study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
 
 XGB_cv_score = list()
+preds = list()
 
 for i in tqdm(range(RUNS)):
 
@@ -174,33 +175,46 @@ for i in tqdm(range(RUNS)):
                               random_state = i).fit(X_train, Y_train)
 
         ## Predicting on X_test and test
+        XGB_pred_train = XGB_md.predict(X_train)
         XGB_pred_1 = XGB_md.predict(X_test)
-
+        XGB_pred_2 = XGB_md.predict(test_md)
+        
         ## Applying Optimal Rounder (using abhishek approach)
         optR = OptimizedRounder()
-        optR.fit(XGB_md.predict(X_train), Y_train)
+    #     optR.fit(XGB_pred_1, Y_test)
+        optR.fit(XGB_pred_train, Y_train)
         coef = optR.coefficients()
         XGB_pred_1 = optR.predict(XGB_pred_1, coef).astype(int)
-
+        XGB_pred_2 = optR.predict(XGB_pred_2, coef).astype(int)
+        
         ## Computing weighted quadratic kappa
         XGB_cv_scores.append(cohen_kappa_score(Y_test, XGB_pred_1, weights = 'quadratic'))
+        preds.append(XGB_pred_2)
+        
+    print('The average roc-auc score over 5-folds (run 5 times) is:', np.mean(XGB_cv_scores))
+    XGB_preds_test = pd.DataFrame(preds).mode(axis = 0).loc[0, ]
+    submission['quality'] = XGB_preds_test.astype(int)
 
-    XGB_cv_score.append(np.mean(XGB_cv_scores))
+
+    file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + 'Run_' + str(i) + '.csv' 
+    submission.to_csv(file_name, index = False)
+
     
-## Identifying the best random_state
-rand_state = np.argmax(XGB_cv_score)
+print('The process finished...')    
+# ## Identifying the best random_state
+# rand_state = np.argmax(XGB_cv_score)
 
-## Building model in entire train dataset
-XGB_md = XGBRegressor(**study.best_trial.params, 
-                      random_state = rand_state).fit(X, Y)
+# ## Building model in entire train dataset
+# XGB_md = XGBRegressor(**study.best_trial.params, 
+#                       random_state = rand_state).fit(X, Y)
 
-optR = OptimizedRounder()
-optR.fit(XGB_md.predict(X), Y)
-coef = optR.coefficients()
-XGB_pred = XGB_md.predict(test_md)
-XGB_pred = optR.predict(XGB_pred, coef).astype(int)
+# optR = OptimizedRounder()
+# optR.fit(XGB_md.predict(X), Y)
+# coef = optR.coefficients()
+# XGB_pred = XGB_md.predict(test_md)
+# XGB_pred = optR.predict(XGB_pred, coef).astype(int)
 
-submission['quality'] = XGB_pred
+# submission['quality'] = XGB_pred
 
-file_name = 'XGB_Reg_FUll_Seed_' + str(SEED) + '.csv' 
-submission.to_csv(file_name, index = False)
+# file_name = 'XGB_Reg_FUll_Seed_' + str(SEED) + '.csv' 
+# submission.to_csv(file_name, index = False)

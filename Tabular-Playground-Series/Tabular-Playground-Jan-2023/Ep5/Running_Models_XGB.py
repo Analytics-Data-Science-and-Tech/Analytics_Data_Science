@@ -162,7 +162,7 @@ print('-----------------------------')
 
 
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
-file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Optuna_Hyperparameters_2.csv'
+file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Optuna_Hyperparameters_3.csv'
 optuna_hyper_params.to_csv(file_name, index = False)
 
 print('-----------------------------')
@@ -220,7 +220,7 @@ for i in tqdm(range(RUNS)):
     file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Run_' + str(i) + '_3.csv' 
     submission.to_csv(file_name, index = False)
 
-file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Run_' + '_CV_Score_3.csv'
+file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_CV_Score_3.csv'
 CV_scores.to_csv(file_name, index = False)
     
 print('-----------------------------')    

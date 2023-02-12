@@ -123,10 +123,11 @@ class Objective:
                     )
 
         scores = []
+        
+        skf = StratifiedKFold(n_splits = 5, random_state = self.seed, shuffle = True)
+#         skf = KFold(n_splits = 5, shuffle = True, random_state = self.seed)
 
-        skf = KFold(n_splits = 5, shuffle = True, random_state = self.seed)
-
-        for fold, (train_idx, valid_idx) in enumerate(skf.split(X, Y)):
+        for train_idx, valid_idx in enumerate(skf.split(X, Y)):
 
             X_train, X_valid = X.iloc[train_idx], X.iloc[valid_idx]
             Y_train , Y_valid = Y.iloc[train_idx] , Y.iloc[valid_idx]
@@ -178,7 +179,8 @@ CV_scores['CV_Score'] = np.nan
 for i in tqdm(range(RUNS)):
 
     XGB_cv_scores = list()
-    skf = KFold(n_splits = 5, random_state = SEED, shuffle = True)
+    skf = StratifiedKFold(n_splits = 5, random_state = self.seed, shuffle = True)
+#     skf = KFold(n_splits = 5, random_state = SEED, shuffle = True)
 
     for train_ix, test_ix in skf.split(X, Y):
 
@@ -215,10 +217,10 @@ for i in tqdm(range(RUNS)):
     submission['quality'] = XGB_preds_test.astype(int)
 
 
-    file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Run_' + str(i) + '_2.csv' 
+    file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Run_' + str(i) + '_3.csv' 
     submission.to_csv(file_name, index = False)
 
-file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Run_' + str(i) + '_CV_Score_2.csv'
+file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Run_' + '_CV_Score_3.csv'
 CV_scores.to_csv(file_name, index = False)
     
 print('-----------------------------')    

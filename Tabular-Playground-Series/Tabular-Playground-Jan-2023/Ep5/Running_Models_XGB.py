@@ -4,7 +4,7 @@ import numpy as np
 import scipy as sp
 from tqdm import tqdm
 from functools import partial
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.metrics import cohen_kappa_score
 from sklearn.neighbors import KNeighborsClassifier
 from xgboost import XGBRegressor

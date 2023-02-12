@@ -124,10 +124,10 @@ class Objective:
 
         scores = []
         
-        skf = StratifiedKFold(n_splits = 5, random_state = self.seed, shuffle = True)
+        skf = StratifiedKFold(n_splits = 5, shuffle = True, random_state = self.seed)
 #         skf = KFold(n_splits = 5, shuffle = True, random_state = self.seed)
 
-        for train_idx, valid_idx in enumerate(skf.split(X, Y)):
+        for train_idx, valid_idx in skf.split(X, Y):
 
             X_train, X_valid = X.iloc[train_idx], X.iloc[valid_idx]
             Y_train , Y_valid = Y.iloc[train_idx] , Y.iloc[valid_idx]
@@ -179,7 +179,7 @@ CV_scores['CV_Score'] = np.nan
 for i in tqdm(range(RUNS)):
 
     XGB_cv_scores = list()
-    skf = StratifiedKFold(n_splits = 5, random_state = self.seed, shuffle = True)
+    skf = StratifiedKFold(n_splits = 5, shuffle = True, random_state = SEED)
 #     skf = KFold(n_splits = 5, random_state = SEED, shuffle = True)
 
     for train_ix, test_ix in skf.split(X, Y):

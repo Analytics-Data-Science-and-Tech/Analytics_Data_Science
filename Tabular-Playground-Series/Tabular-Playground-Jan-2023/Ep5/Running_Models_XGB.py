@@ -149,7 +149,7 @@ class Objective:
     
 ## Defining number of runs and seed
 RUNS = 50
-SEED = 1
+SEED = 33
 N_TRIALS = 50
 
 # Execute an optimization
@@ -162,7 +162,7 @@ print('-----------------------------')
 
 
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
-file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Optuna_Hyperparameters_5.csv'
+file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Optuna_Hyperparameters_1.csv'
 optuna_hyper_params.to_csv(file_name, index = False)
 
 print('-----------------------------')
@@ -217,10 +217,10 @@ for i in tqdm(range(RUNS)):
     submission['quality'] = XGB_preds_test.astype(int)
 
 
-    file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Run_' + str(i) + '_5.csv' 
+    file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Run_' + str(i) + '_1.csv' 
     submission.to_csv(file_name, index = False)
 
-file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_CV_Score_5.csv'
+file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_CV_Score_1.csv'
 CV_scores.to_csv(file_name, index = False)
     
 print('-----------------------------')    

@@ -1,3 +1,59 @@
+import boto3
+import pandas as pd; pd.set_option('display.max_columns', 100)
+import numpy as np
+
+import matplotlib.pyplot as plt; plt.style.use('ggplot')
+import seaborn as sns
+
+from scipy.stats import rankdata
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.tree import DecisionTreeRegressor, plot_tree
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import KFold, train_test_split, GridSearchCV, StratifiedKFold, TimeSeriesSplit
+from sklearn.metrics import mean_squared_error, roc_auc_score
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
+from lightgbm import LGBMClassifier
+from xgboost import XGBClassifier
+from catboost import CatBoostClassifier
+
+import optuna as op
+
+s3 = boto3.resource('s3')
+bucket_name = 'analytics-data-science-competitions'
+bucket = s3.Bucket(bucket_name)
+
+file_key_1 = 'Tabular-Playground-Series/PS-S3/Ep7/train.csv'
+file_key_2 = 'Tabular-Playground-Series/PS-S3/Ep7/test.csv'
+file_key_3 = 'Tabular-Playground-Series/PS-S3/Ep7/sample_submission.csv'
+
+bucket_object_1 = bucket.Object(file_key_1)
+file_object_1 = bucket_object_1.get()
+file_content_stream_1 = file_object_1.get('Body')
+
+bucket_object_2 = bucket.Object(file_key_2)
+file_object_2 = bucket_object_2.get()
+file_content_stream_2 = file_object_2.get('Body')
+
+bucket_object_3 = bucket.Object(file_key_3)
+file_object_3 = bucket_object_3.get()
+file_content_stream_3 = file_object_3.get('Body')
+
+## Reading data files
+train = pd.read_csv(file_content_stream_1)
+test = pd.read_csv(file_content_stream_2)
+submission = pd.read_csv(file_content_stream_3)
+
+train_lgb = train.copy()
+test_lgb = test.copy()
+
+X = train_lgb.drop(columns = ['id', 'booking_status'], axis = 1)
+Y = train_lgb['booking_status']
+
+test_lgb = test_lgb.drop(columns = ['id'], axis = 1)
+
+
 class Objective:
 
     def __init__(self, seed):
@@ -6,16 +62,17 @@ class Objective:
 
     def __call__(self, trial):
         ## Parameters to be evaluated
-        param = dict(objective = 'reg:absoluteerror',
-                     metric = '',
+        param = dict(objective = 'binary',
+                     metric = 'auc',
                      tree_method = 'gbdt', 
-                     max_depth = trial.suggest_int('max_depth', 2, 10),
-                     learning_rate = trial.suggest_float('learning_rate', 1e-4, 1e-1, log = True),
-                     n_estimators = trial.suggest_int('n_estimators', 30, 10000),
-                     gamma = trial.suggest_float('gamma', 0, 10),
-                     min_child_weight = trial.suggest_int('min_child_weight', 1, 100),
-                     colsample_bytree = trial.suggest_float('colsample_bytree', 0.2, 0.9),
-                     subsample = trial.suggest_float('subsample', 0.2, 0.9)
+                     n_estimators = trial.suggest_int('n_estimators', 300, 10000),
+                     learning_rate = trial.suggest_float('learning_rate', 0.001, 1, log = True),
+                     max_depth = trial.suggest_int('max_depth', 3, 12),
+                     lambda_l1 = trial.suggest_float('lambda_l1', 0.01, 10.0, log = True),
+                     lambda_l2 = trial.suggest_float('lambda_l2', 0.01, 10.0, log = True),
+                     num_leaves = trial.suggest_int('num_leaves', 2, 100),
+                     bagging_fraction = trial.suggest_float('bagging_fraction', 0.2, 0.9),
+                     feature_fraction = trial.suggest_float('feature_fraction', 0.2, 0.9)
                     )
 
         scores = []
@@ -28,25 +85,20 @@ class Objective:
             X_train, X_valid = X.iloc[train_idx], X.iloc[valid_idx]
             Y_train , Y_valid = Y.iloc[train_idx] , Y.iloc[valid_idx]
 
-            model = XGBRegressor(**param).fit(X_train, Y_train)
+            model = LGBMClassifier(**param).fit(X_train, Y_train)
 
-            preds_train = model.predict(X_train)
-            preds_valid = model.predict(X_valid)
+#             preds_train = model.predict(X_train)
+            preds_valid = model.predict_proba(X_valid)[:, 1]
 
-            optR = OptimizedRounder()
-            optR.fit(preds_train, Y_train)
-            coef = optR.coefficients()
-            preds_valid = optR.predict(preds_valid, coef).astype(int)
-
-            score = cohen_kappa_score(Y_valid,  preds_valid, weights = 'quadratic')
+            score = roc_auc_score(Y_valid, preds_valid)
             scores.append(score)
 
         return np.mean(scores)
     
 ## Defining number of runs and seed
-RUNS = 50
-SEED = 33
-N_TRIALS = 50
+RUNS = 2
+SEED = 42
+N_TRIALS = 10
 
 # Execute an optimization
 study = optuna.create_study(direction = 'maximize')
@@ -56,21 +108,20 @@ print('-----------------------------')
 print('Saving Optuna Hyper-Parameters')
 print('-----------------------------')
 
-
-optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
-file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Optuna_Hyperparameters_1.csv'
-optuna_hyper_params.to_csv(file_name, index = False)
+# optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+# file_name = 'XGB_Reg_4_features_Seed_' + str(SEED) + '_Optuna_Hyperparameters_1.csv'
+# optuna_hyper_params.to_csv(file_name, index = False)
 
 print('-----------------------------')
 print('Starting CV process')
 print('-----------------------------')
 
 
-XGB_cv_score = list()
-preds = list()
-
 CV_scores = pd.DataFrame({'Run': [i for i in range(1, (RUNS + 1))]})
 CV_scores['CV_Score'] = np.nan
+
+cv_scores, roc_auc_scores = list(), list()
+preds = list()
 
 for i in tqdm(range(RUNS)):
 
@@ -85,29 +136,22 @@ for i in tqdm(range(RUNS)):
         Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
 
         ## Building RF model
-        XGB_md = XGBRegressor(**study.best_trial.params, 
-                              random_state = i).fit(X_train, Y_train)
+        lgb_md = LBGMClassifier(**study.best_trial.params, 
+                                random_state = i).fit(X_train, Y_train)
 
         ## Predicting on X_test and test
-        XGB_pred_train = XGB_md.predict(X_train)
-        XGB_pred_1 = XGB_md.predict(X_test)
-        XGB_pred_2 = XGB_md.predict(test_md)
+        lgb_pred_1 = lgb_md.predict(X_test)
+        lgb_pred_2 = lgb_md.predict(test_md)
         
-        ## Applying Optimal Rounder (using abhishek approach)
-        optR = OptimizedRounder()
-#         optR.fit(XGB_pred_1, Y_test)
-        optR.fit(XGB_pred_train, Y_train)
-        coef = optR.coefficients()
-        XGB_pred_1 = optR.predict(XGB_pred_1, coef).astype(int)
-        XGB_pred_2 = optR.predict(XGB_pred_2, coef).astype(int)
-        
-        ## Computing weighted quadratic kappa
-        XGB_cv_scores.append(cohen_kappa_score(Y_test, XGB_pred_1, weights = 'quadratic'))
-        preds.append(XGB_pred_2)
+        ## Computing roc-auc score
+        roc_auc_scores.append(roc_auc_score(Y_test, lgb_pred_1))
+        preds.append(lgb_pred_2)
     
-    avg_score = np.mean(XGB_cv_scores)
-    print('The average oof weighted kappa score over 5-folds is:', avg_score)
-    CV_scores.loc[i, 'CV_Score'] = avg_score
+    cv_scores.append(np.mean(roc_auc_scores))
+
+    lgb_cv_score = np.mean(cv_scores)    
+print('The roc-auc score over 5-folds (run 5 times) is:', lgb_cv_score)
+
     
     XGB_preds_test = pd.DataFrame(preds).mode(axis = 0).loc[0, ]
     submission['quality'] = XGB_preds_test.astype(int)

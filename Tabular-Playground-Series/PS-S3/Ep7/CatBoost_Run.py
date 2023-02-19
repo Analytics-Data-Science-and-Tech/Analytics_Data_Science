@@ -97,21 +97,21 @@ test['segment_1_year_flag'] = np.where(((test['market_segment_type'] == 1) & (te
 test['price_lead_time_flag'] = np.where(((test['avg_price_per_room'] > 100) & (test['lead_time'] > 150)), 1, 0)
 
 
-#######################
-## Feature Selection ##
-#######################
+# #######################
+# ## Feature Selection ##
+# #######################
 
-print('-----------------------------')
-print('Feature Selection Started')
-print('-----------------------------')
+# print('-----------------------------')
+# print('Feature Selection Started')
+# print('-----------------------------')
 
 
 X = train.drop(columns = ['id', 'low_price_flag', 'no_of_adults', 'no_of_children', 'no_of_weekend_nights', 'no_of_week_nights', 'booking_status'], axis = 1)
 Y = train['booking_status'] 
 
-auto_feature_selection = RFECV(estimator = XGBClassifier(), step = 1, min_features_to_select = 5, cv = 5, scoring = 'roc_auc', n_jobs = -1).fit(X, Y)
+# auto_feature_selection = RFECV(estimator = CatBoostClassifier(verbose = False), step = 1, min_features_to_select = 5, cv = 5, scoring = 'roc_auc', n_jobs = -1).fit(X, Y)
 
-print(X.columns[auto_feature_selection.support_])
+# print(X.columns[auto_feature_selection.support_])
 
 ############
 ## Optuna ##
@@ -121,8 +121,26 @@ print('-----------------------------')
 print('Optuna Optimization Started')
 print('-----------------------------')
 
-X = X[X.columns[auto_feature_selection.support_]]
-test_CatBoost = test[X.columns[auto_feature_selection.support_]]
+# X = X[X.columns[auto_feature_selection.support_]]
+# test_CatBoost = test[X.columns[auto_feature_selection.support_]]
+
+X = X[['type_of_meal_plan', 'required_car_parking_space', 'room_type_reserved',
+       'lead_time', 'arrival_year', 'arrival_month', 'arrival_date',
+       'market_segment_type', 'repeated_guest',
+       'no_of_previous_bookings_not_canceled', 'avg_price_per_room',
+       'no_of_special_requests', 'segment_0', 'segment_1', 'total_guests',
+       'stay_length', 'stay_during_weekend', 'segment_0_feature_1',
+       'segment_1_feature_1', 'segment_1_feature_2', 'segment_0_year_flag',
+       'segment_1_year_flag', 'price_lead_time_flag']]
+
+test_CatBoost = test[['type_of_meal_plan', 'required_car_parking_space', 'room_type_reserved',
+       'lead_time', 'arrival_year', 'arrival_month', 'arrival_date',
+       'market_segment_type', 'repeated_guest',
+       'no_of_previous_bookings_not_canceled', 'avg_price_per_room',
+       'no_of_special_requests', 'segment_0', 'segment_1', 'total_guests',
+       'stay_length', 'stay_during_weekend', 'segment_0_feature_1',
+       'segment_1_feature_1', 'segment_1_feature_2', 'segment_0_year_flag',
+       'segment_1_year_flag', 'price_lead_time_flag']]
 
 class Objective:
 
@@ -197,13 +215,13 @@ for i in range(5):
         Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
     
         ## Building RF model
-        lgb_md = CatBoostClassifier(**study.best_trial.params, 
+        cat_md = CatBoostClassifier(**study.best_trial.params, 
                                     verbose = False).fit(X_train, Y_train)
 #         cat_imp.append(lgb_md.feature_importances_)
         
         ## Predicting on X_test and test
-        cat_pred_1 = lgb_md.predict_proba(X_test)[:, 1]
-        cat_pred_2 = lgb_md.predict_proba(test_CatBoost)[:, 1]
+        cat_pred_1 = cat_md.predict_proba(X_test)[:, 1]
+        cat_pred_2 = cat_md.predict_proba(test_CatBoost)[:, 1]
         
         ## Computing roc-auc score
         roc_auc_scores.append(roc_auc_score(Y_test, cat_pred_1))

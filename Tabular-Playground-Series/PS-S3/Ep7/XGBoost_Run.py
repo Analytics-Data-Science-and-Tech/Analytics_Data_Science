@@ -123,6 +123,7 @@ print('-----------------------------')
 
 
 X = X[X.columns[auto_feature_selection.support_]]
+test_XGB = test[X.columns[auto_feature_selection.support_]]
 
 class Objective:
 
@@ -182,6 +183,20 @@ print('-----------------------------')
 print('Starting CV process')
 print('-----------------------------')
 
+# X = train[['type_of_meal_plan', 'required_car_parking_space', 'room_type_reserved',
+#        'lead_time', 'arrival_year', 'arrival_month', 'market_segment_type',
+#        'repeated_guest', 'avg_price_per_room', 'no_of_special_requests',
+#        'segment_1', 'total_guests', 'stay_length', 'stay_during_weekend',
+#        'quarter_2', 'quarter_3', 'segment_0_feature_1', 'segment_1_feature_1',
+#        'segment_1_feature_2', 'segment_1_year_flag', 'price_lead_time_flag']]
+# Y = train['booking_status']
+# test_XGB = test[['type_of_meal_plan', 'required_car_parking_space', 'room_type_reserved',
+#        'lead_time', 'arrival_year', 'arrival_month', 'market_segment_type',
+#        'repeated_guest', 'avg_price_per_room', 'no_of_special_requests',
+#        'segment_1', 'total_guests', 'stay_length', 'stay_during_weekend',
+#        'quarter_2', 'quarter_3', 'segment_0_feature_1', 'segment_1_feature_1',
+#        'segment_1_feature_2', 'segment_1_year_flag', 'price_lead_time_flag']]
+
 XGB_cv_scores, roc_auc_scores = list(), list()
 preds = list()
 
@@ -197,11 +212,19 @@ for i in range(5):
         Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
                 
         ## Building RF model
-        XGB_md = XGBClassifier(**study.best_trial.params).fit(X_train, Y_train)
+#         XGB_md = XGBClassifier(**study.best_trial.params).fit(X_train, Y_train)
+        XGB_md = XGBClassifier(tree_method = 'hist',
+                               colsample_bytree = 0.3785810426716012, 
+                               gamma = 0.8723616924377348, 
+                               learning_rate = 0.005325963175791756, 
+                               max_depth = 9, 
+                               min_child_weight = 1, 
+                               n_estimators = 8796, 
+                               subsample = 0.7011532734195687).fit(X_train, Y_train)
         
         ## Predicting on X_test and test
         XGB_pred_1 = XGB_md.predict_proba(X_test)[:, 1]
-        XGB_pred_2 = XGB_md.predict_proba(test_lgb)[:, 1]
+        XGB_pred_2 = XGB_md.predict_proba(test_XGB)[:, 1]
         
         ## Computing roc-auc score
         roc_auc_scores.append(roc_auc_score(Y_test, XGB_pred_1))
@@ -216,7 +239,8 @@ XGB_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
 submission['booking_status'] = XGB_preds_test
 
 file_name = 'XGB_FS_Seed_' + str(SEED) + '_CV_Score.csv'
-CV_scores.to_csv(file_name, index = False)
+submission.to_csv(file_name, index = False)
+# CV_scores.to_csv(file_name, index = False)
 
 print('-----------------------------')    
 print('The process finished...')    

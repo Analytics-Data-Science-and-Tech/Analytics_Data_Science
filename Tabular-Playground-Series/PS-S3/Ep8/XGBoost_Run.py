@@ -120,6 +120,9 @@ RFE_results = 100*RFE_results.apply(np.sum, axis = 0) / RFE_results.shape[0]
 ## Identifying features with a percentage score > 80%
 features_to_select = RFE_results.index[RFE_results > 80].tolist()
 
+features_dict = {'Features': features_to_select}
+pd.DataFrame(features_dict).to_csv('Important_features.csv', index = False)
+
 print(features_to_select)
 
 ############

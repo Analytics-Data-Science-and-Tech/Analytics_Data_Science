@@ -118,9 +118,9 @@ test_dup = test[np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
 ## Feature Selection ##
 #######################
 
-print('-----------------------------')
-print('Running Feature Selection :-) ')
-print('-----------------------------')
+print('-----------------------------------')
+print(' (-: Running Feature Selection :-) ')
+print('-----------------------------------')
 
 X = train_clean.drop(columns = ['id', 'low_price_flag', 'no_of_adults', 'no_of_children', 'no_of_weekend_nights', 'no_of_week_nights', 'booking_status'], axis = 1)
 Y = train_clean['booking_status']
@@ -128,7 +128,7 @@ Y = train_clean['booking_status']
 ## Running RFECV multiple times
 RFE_results = list()
 
-for i in tqdm(range(0, 2)):
+for i in tqdm(range(0, 10)):
     
     auto_feature_selection = RFECV(estimator = LGBMClassifier(), step = 1, min_features_to_select = 2, cv = 5, scoring = 'roc_auc').fit(X, Y)
     
@@ -151,7 +151,7 @@ print(features_to_select)
 #########################
 
 print('-----------------------------')
-print('Optuna has started :-) ')
+print(' (-: Optuna has started :-) ')
 print('-----------------------------')
 
 X = train_clean[features_to_select]
@@ -202,7 +202,7 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 5
+N_TRIALS = 50
 
 # Execute an optimization
 study = optuna.create_study(direction = 'maximize')
@@ -214,7 +214,7 @@ study.optimize(Objective(SEED), n_trials = N_TRIALS)
 ##################
 
 print('-----------------------------')
-print('Starting CV process :-) ')
+print(' (-: Starting CV process :-) ')
 print('-----------------------------')
 
 

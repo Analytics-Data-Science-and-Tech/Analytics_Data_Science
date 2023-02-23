@@ -2,6 +2,8 @@ import boto3
 import pandas as pd; pd.set_option('display.max_columns', 100)
 import numpy as np
 
+from tqdm import tqdm
+
 import matplotlib.pyplot as plt; plt.style.use('ggplot')
 import seaborn as sns
 
@@ -103,7 +105,7 @@ RFE_results = list()
 
 for i in tqdm(range(0, 10)):
     
-    auto_feature_selection = RFECV(estimator = XGBRegressor(tree_method = 'gpu_hist'), step = 1, min_features_to_select = 2, cv = 5, scoring = 'neg_root_mean_squared_error').fit(X, Y)
+    auto_feature_selection = RFECV(estimator = XGBRegressor(tree_method = 'hist'), step = 1, min_features_to_select = 2, cv = 5, scoring = 'neg_root_mean_squared_error').fit(X, Y)
     
     ## Extracting and storing features to be selected
     RFE_results.append(auto_feature_selection.support_)
@@ -143,7 +145,7 @@ class Objective:
         ## Parameters to be evaluated
         param = dict(objective = 'reg:squarederror',
                      eval_metric = 'rmse',
-                     tree_method = 'gpu_hist', 
+                     tree_method = 'hist', 
                      max_depth = trial.suggest_int('max_depth', 2, 10),
                      learning_rate = trial.suggest_float('learning_rate', 1e-4, 1e-1, log = True),
                      n_estimators = trial.suggest_int('n_estimators', 30, 10000),
@@ -177,3 +179,51 @@ N_TRIALS = 50
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
+
+print('The best trial rmse is: ', study.best_trial.values)
+print('The best hyper-parameter combination is: ', study.best_trial.params)
+
+optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+file_name = 'XGB_FS_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+optuna_hyper_params.to_csv(file_name, index = False)
+
+
+print('-----------------------------')
+print('Starting CV process')
+print('-----------------------------')
+
+XGB_cv_scores, preds = list(), list()
+
+for i in range(5):
+
+    skf = KFold(n_splits = 5, random_state = 42, shuffle = True)
+    
+    for train_ix, test_ix in skf.split(X, Y):
+        
+        ## Splitting the data 
+        X_train, X_test = X.iloc[train_ix], X.iloc[test_ix]
+        Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
+                
+        ## Building XGBoost model
+        XGB_md = XGBRegressor(**study.best_trial.params,
+                              tree_method = 'hist').fit(X_train, Y_train)
+        
+        ## Predicting on X_test and test
+        XGB_pred_1 = XGB_md.predict(X_test)
+        XGB_pred_2 = XGB_md.predict(test_xgb)
+        
+        ## Computing rmse
+        XGB_cv_scores.append(mean_squared_error(Y_test, XGB_pred_1, squared = False))
+        preds.append(XGB_pred_2)
+
+XGB_cv_score = np.mean(XGB_cv_scores)    
+print('The average oof rmse score over 5-folds (run 5 times) is:', XGB_cv_score)
+
+xgb_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
+submission['price'] = xgb_preds_test
+
+submission.to_csv('XGBoost_baseline_3_submission.csv', index = False)
+
+print('-----------------------------')    
+print('The process finished...')    
+print('-----------------------------')

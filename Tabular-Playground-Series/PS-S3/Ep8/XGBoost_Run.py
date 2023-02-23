@@ -84,8 +84,12 @@ def feature_engineering(df):
     
     return df
 
-train_FE = feature_engineering(updating_labels(train).drop(columns = ['cut', 'color', 'clarity'], axis = 1))
-test_FE = feature_engineering(updating_labels(test).drop(columns = ['cut', 'color', 'clarity'], axis = 1))
+train_FE = updating_labels(train).drop(columns = ['cut', 'color', 'clarity'], axis = 1)
+test_FE = updating_labels(test).drop(columns = ['cut', 'color', 'clarity'], axis = 1)
+
+
+# train_FE = feature_engineering(updating_labels(train).drop(columns = ['cut', 'color', 'clarity'], axis = 1))
+# test_FE = feature_engineering(updating_labels(test).drop(columns = ['cut', 'color', 'clarity'], axis = 1))
 
 
 #######################
@@ -100,30 +104,30 @@ print('-----------------------------')
 X = train_FE.drop(columns = ['id', 'price'], axis = 1)
 Y = train_FE['price']
 
-## Running RFECV multiple times
-RFE_results = list()
+# ## Running RFECV multiple times
+# RFE_results = list()
 
-for i in tqdm(range(0, 10)):
+# for i in tqdm(range(0, 10)):
     
-    auto_feature_selection = RFECV(estimator = XGBRegressor(tree_method = 'hist'), step = 1, min_features_to_select = 2, cv = 5, scoring = 'neg_root_mean_squared_error').fit(X, Y)
+#     auto_feature_selection = RFECV(estimator = XGBRegressor(tree_method = 'hist'), step = 1, min_features_to_select = 2, cv = 5, scoring = 'neg_root_mean_squared_error').fit(X, Y)
     
-    ## Extracting and storing features to be selected
-    RFE_results.append(auto_feature_selection.support_)
+#     ## Extracting and storing features to be selected
+#     RFE_results.append(auto_feature_selection.support_)
 
-## Changing to data-frame
-RFE_results = pd.DataFrame(RFE_results)
-RFE_results.columns = X.columns
+# ## Changing to data-frame
+# RFE_results = pd.DataFrame(RFE_results)
+# RFE_results.columns = X.columns
 
-## Computing the percentage of time features are flagged as important
-RFE_results = 100*RFE_results.apply(np.sum, axis = 0) / RFE_results.shape[0]
+# ## Computing the percentage of time features are flagged as important
+# RFE_results = 100*RFE_results.apply(np.sum, axis = 0) / RFE_results.shape[0]
 
-## Identifying features with a percentage score > 80%
-features_to_select = RFE_results.index[RFE_results > 80].tolist()
+# ## Identifying features with a percentage score > 80%
+# features_to_select = RFE_results.index[RFE_results > 80].tolist()
 
-features_dict = {'Features': features_to_select}
-pd.DataFrame(features_dict).to_csv('Important_features.csv', index = False)
+# features_dict = {'Features': features_to_select}
+# pd.DataFrame(features_dict).to_csv('Important_features_1.csv', index = False)
 
-print(features_to_select)
+# print(features_to_select)
 
 ############
 ## Optuna ##
@@ -133,10 +137,15 @@ print('-----------------------------')
 print('Optuna Optimization Started')
 print('-----------------------------')
 
-X = train_FE[features_to_select]
+# X = train_FE[features_to_select]
+# Y = train_FE['price']
+
+# test_xgb = test_FE[features_to_select]
+
+X = train_FE.drop(columns = ['id', 'price'], axis = 1)
 Y = train_FE['price']
 
-test_xgb = test_FE[features_to_select]
+test_xgb = test_FE.drop(columns = 'id', axis = 1)
 
 class Objective:
 
@@ -187,7 +196,7 @@ print('The best trial rmse is: ', study.best_trial.values)
 print('The best hyper-parameter combination is: ', study.best_trial.params)
 
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
-file_name = 'XGB_FS_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+file_name = 'XGB_FS_Seed_' + str(SEED) + '_Optuna_Hyperparameters_2.csv'
 optuna_hyper_params.to_csv(file_name, index = False)
 
 
@@ -225,7 +234,7 @@ print('The average oof rmse score over 5-folds (run 5 times) is:', XGB_cv_score)
 xgb_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
 submission['price'] = xgb_preds_test
 
-submission.to_csv('XGBoost_baseline_3_submission.csv', index = False)
+submission.to_csv('XGBoost_baseline_5_submission.csv', index = False)
 
 print('-----------------------------')    
 print('The process finished...')    

@@ -170,7 +170,7 @@ class Objective:
         ## Parameters to be evaluated
         param = dict(objective = 'binary',
                      metric = 'auc',
-                     tree_method = 'gbdt', 
+                     boosting_type = 'gbdt', 
                      n_estimators = trial.suggest_int('n_estimators', 300, 10000),
                      learning_rate = trial.suggest_float('learning_rate', 0.001, 1, log = True),
                      max_depth = trial.suggest_int('max_depth', 3, 12),
@@ -202,7 +202,7 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 50
+N_TRIALS = 70
 
 # Execute an optimization
 study = optuna.create_study(direction = 'maximize')
@@ -265,4 +265,4 @@ submission = pd.merge(submission, dup_pred, on = 'id', how = 'left')
 submission['booking_status'] = np.where(np.isnan(submission['booking_status_clean']), submission['booking_status_dup'], submission['booking_status_clean'])
 submission.drop(columns = ['booking_status_clean', 'booking_status_dup'], axis = 1, inplace = True)
 
-submission.to_csv('LightGBM_Leakage_2.csv', index = False)
+submission.to_csv('LightGBM_Leakage_3.csv', index = False)

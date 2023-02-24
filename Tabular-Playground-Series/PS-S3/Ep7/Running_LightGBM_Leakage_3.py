@@ -109,9 +109,12 @@ test_dup_ids = duplicates['id_y'].tolist()
 ## Removing duplicates
 train_clean = train[~np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
 train_dup = train[np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
+train_dup['booking_status'] = 1 - train_dup['booking_status']
 
-test_clean = test[~np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
-test_dup = test[np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
+train = pd.concat([train_clean, train_dup], axis = 0).reset_index(drop = True)
+
+# test_clean = test[~np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
+# test_dup = test[np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
 
 
 #######################
@@ -122,8 +125,8 @@ print('-----------------------------------')
 print(' (-: Running Feature Selection :-) ')
 print('-----------------------------------')
 
-X = train_clean.drop(columns = ['id', 'low_price_flag', 'no_of_adults', 'no_of_children', 'no_of_weekend_nights', 'no_of_week_nights', 'booking_status'], axis = 1)
-Y = train_clean['booking_status']
+X = train.drop(columns = ['id', 'low_price_flag', 'no_of_adults', 'no_of_children', 'no_of_weekend_nights', 'no_of_week_nights', 'booking_status'], axis = 1)
+Y = train['booking_status']
 
 ## Running RFECV multiple times
 RFE_results = list()
@@ -154,10 +157,10 @@ print('-----------------------------')
 print(' (-: Optuna has started :-) ')
 print('-----------------------------')
 
-X = train_clean[features_to_select]
-Y = train_clean['booking_status']
+X = train[features_to_select]
+Y = train['booking_status']
 
-test_lgb = test_clean[features_to_select]
+test_lgb = test[features_to_select]
 
 class Objective:
 
@@ -248,21 +251,6 @@ for i in range(5):
 lgb_cv_score = np.mean(cv_scores)    
 print('The oof roc-auc score over 5-folds (run 5 times) is:', lgb_cv_score)
 
-###############################
-## Consolidating Predictions ##
-###############################
-
 lgb_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
-clean_pred = pd.DataFrame({'id': test_clean['id']})
-clean_pred['booking_status_clean'] = lgb_preds_test
-
-dup_pred = duplicates[['id_y', 'booking_status']]
-dup_pred.columns = ['id', 'booking_status_dup']
-dup_pred['booking_status_dup'] = 1 - dup_pred['booking_status_dup']
-
-submission = pd.merge(submission.drop(columns = 'booking_status', axis = 1), clean_pred, on = 'id', how = 'left')
-submission = pd.merge(submission, dup_pred, on = 'id', how = 'left')
-submission['booking_status'] = np.where(np.isnan(submission['booking_status_clean']), submission['booking_status_dup'], submission['booking_status_clean'])
-submission.drop(columns = ['booking_status_clean', 'booking_status_dup'], axis = 1, inplace = True)
-
-submission.to_csv('LightGBM_Leakage_3.csv', index = False)
+submission['booking_status'] = lgb_preds_test
+submission.to_csv('LightGBM_Leakage_4.csv', index = False)

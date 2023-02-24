@@ -106,7 +106,6 @@ duplicates = pd.merge(train, test, on = train_dup.columns.tolist()[1:18])
 train_dup_ids = duplicates['id_x'].tolist()
 test_dup_ids = duplicates['id_y'].tolist()
 
-## Removing duplicates
 train_clean = train[~np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
 train_dup = train[np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
 

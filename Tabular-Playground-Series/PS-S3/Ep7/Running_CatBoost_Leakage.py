@@ -12,14 +12,14 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier, plot_tree
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import KFold, train_test_split, GridSearchCV, StratifiedKFold, TimeSeriesSplit
+from sklearn.feature_selection import RFE, RFECV
 from sklearn.metrics import mean_squared_error, roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.feature_selection import RFE, RFECV
-from lightgbm import LGBMClassifier
-# from xgboost import XGBClassifier
-# from catboost import CatBoostClassifier
+# from lightgbm import LGBMClassifier
+from xgboost import XGBClassifier
+from catboost import CatBoostClassifier
 
 import optuna 
 
@@ -47,6 +47,10 @@ file_content_stream_3 = file_object_3.get('Body')
 train = pd.read_csv(file_content_stream_1)
 test = pd.read_csv(file_content_stream_2)
 submission = pd.read_csv(file_content_stream_3)
+
+#########################
+## Feature Engineering ##
+#########################
 
 ## Fixing dates (https://www.kaggle.com/competitions/playground-series-s3e7/discussion/386655)
 train['arrival_year_month'] = pd.to_datetime(train['arrival_year'].astype(str) + train['arrival_month'].astype(str), format = '%Y%m')
@@ -117,111 +121,126 @@ test_dup = test[np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
 ## Feature Selection ##
 #######################
 
-print('-----------------------------------')
-print(' (-: Running Feature Selection :-) ')
-print('-----------------------------------')
+# print('-----------------------------------')
+# print(' (-: Feature Selection Started :-) ')
+# print('-----------------------------------')
 
-X = train_clean.drop(columns = ['id', 'low_price_flag', 'no_of_adults', 'no_of_children', 'no_of_weekend_nights', 'no_of_week_nights', 'booking_status'], axis = 1)
-Y = train_clean['booking_status']
 
-## Running RFECV multiple times
-RFE_results = list()
+# X = train_clean.drop(columns = ['id', 'low_price_flag', 'no_of_adults', 'no_of_children', 'no_of_weekend_nights', 'no_of_week_nights', 'booking_status'], axis = 1)
+# Y = train_clean['booking_status'] 
 
-for i in tqdm(range(0, 10)):
+# ## Running RFECV multiple times
+# RFE_results = list()
+
+# for i in tqdm(range(0, 10)):
     
-    auto_feature_selection = RFECV(estimator = LGBMClassifier(), step = 1, min_features_to_select = 2, cv = 5, scoring = 'roc_auc').fit(X, Y)
+#     auto_feature_selection = RFECV(estimator = CatBoostClassifier(verbose = False), step = 1, min_features_to_select = 2, cv = 5, scoring = 'roc_auc', n_jobs = -1).fit(X, Y)
     
-    ## Extracting and storing features to be selected
-    RFE_results.append(auto_feature_selection.support_)
+#     ## Extracting and storing features to be selected
+#     RFE_results.append(auto_feature_selection.support_)
 
-## Changing to data-frame
-RFE_results = pd.DataFrame(RFE_results)
-RFE_results.columns = X.columns
+# ## Changing to data-frame
+# RFE_results = pd.DataFrame(RFE_results)
+# RFE_results.columns = X.columns
 
-## Computing the percentage of time features are flagged as important
-RFE_results = 100*RFE_results.apply(np.sum, axis = 0) / RFE_results.shape[0]
+# ## Computing the percentage of time features are flagged as important
+# RFE_results = 100*RFE_results.apply(np.sum, axis = 0) / RFE_results.shape[0]
 
-## Identifying features with a percentage score > 80%
-features_to_select = RFE_results.index[RFE_results > 80].tolist()
-print(features_to_select)
+# ## Identifying features with a percentage score > 80%
+# features_to_select = RFE_results.index[RFE_results > 80].tolist()
+# print(features_to_select)
 
-#########################
-## Optuna Optimization ##
-#########################
+############
+## Optuna ##
+############
 
-print('-----------------------------')
-print(' (-: Optuna has started :-) ')
-print('-----------------------------')
+# print('-------------------------------------')
+# print(' (-: Optuna Optimization Started :-) ')
+# print('-------------------------------------')
 
-X = train_clean[features_to_select]
-Y = train_clean['booking_status']
+X = train_clean[['type_of_meal_plan', 'required_car_parking_space', 'room_type_reserved',
+                 'lead_time', 'arrival_year', 'arrival_month', 'arrival_date', 
+                 'market_segment_type', 'repeated_guest', 'avg_price_per_room', 
+                 'no_of_special_requests', 'total_guests', 'stay_length', 
+                 'stay_during_weekend', 'segment_0_feature_1', 'segment_1_feature_1', 
+                 'segment_1_year_flag', 'price_lead_time_flag']]
+Y = train_clean['booking_status']    
 
-test_lgb = test_clean[features_to_select]
+test_cat = test_clean[['type_of_meal_plan', 'required_car_parking_space', 
+                       'room_type_reserved', 'lead_time', 'arrival_year', 'arrival_month', 
+                       'arrival_date', 'market_segment_type', 'repeated_guest', 
+                       'avg_price_per_room', 'no_of_special_requests', 'total_guests', 
+                       'stay_length', 'stay_during_weekend', 'segment_0_feature_1', 
+                       'segment_1_feature_1', 'segment_1_year_flag', 'price_lead_time_flag']]
+    
+# X = train_clean[features_to_select]
+# Y = train_clean['booking_status']
 
-class Objective:
+# test_cat = test_clean[features_to_select]
 
-    def __init__(self, seed):
-        # Hold this implementation specific arguments as the fields of the class.
-        self.seed = seed
+# class Objective:
 
-    def __call__(self, trial):
+#     def __init__(self, seed):
+#         # Hold this implementation specific arguments as the fields of the class.
+#         self.seed = seed
+
+#     def __call__(self, trial):
+#         ## Parameters to be evaluated
+#         param = dict(loss_function = 'Logloss',
+#                      eval_metric = 'AUC',
+#                      iterations = trial.suggest_int('iterations', 300, 10000),
+#                      learning_rate = trial.suggest_float('learning_rate', 0.001, 1, log = True),
+#                      depth = trial.suggest_int('depth', 3, 12),
+#                      random_strength = trial.suggest_float('random_strength', 0.01, 10.0, log = True),
+#                      bagging_temperature = trial.suggest_float('bagging_temperature', 0.01,  0.99),
+#                      border_count = trial.suggest_int('border_count', 1, 255),
+#                      l2_leaf_reg = trial.suggest_int('l2_leaf_reg', 2, 30),
+#                      verbose = False
+#                     )
+
+#         scores = []
         
-        ## Parameters to be evaluated
-        param = dict(objective = 'binary',
-                     metric = 'auc',
-                     boosting_type = 'gbdt', 
-                     n_estimators = trial.suggest_int('n_estimators', 300, 10000),
-                     learning_rate = trial.suggest_float('learning_rate', 0.001, 1, log = True),
-                     max_depth = trial.suggest_int('max_depth', 3, 12),
-                     lambda_l1 = trial.suggest_float('lambda_l1', 0.01, 10.0, log = True),
-                     lambda_l2 = trial.suggest_float('lambda_l2', 0.01, 10.0, log = True),
-                     num_leaves = trial.suggest_int('num_leaves', 2, 100),
-                     bagging_fraction = trial.suggest_float('bagging_fraction', 0.2, 0.9),
-                     feature_fraction = trial.suggest_float('feature_fraction', 0.2, 0.9)
-#                      device = 'gpu'
-                    )
+#         skf = StratifiedKFold(n_splits = 5, shuffle = True, random_state = self.seed)
 
-        scores = []
-        
-        skf = StratifiedKFold(n_splits = 5, shuffle = True, random_state = self.seed)
+#         for train_idx, valid_idx in skf.split(X, Y):
 
-        for train_idx, valid_idx in skf.split(X, Y):
+#             X_train, X_valid = X.iloc[train_idx], X.iloc[valid_idx]
+#             Y_train , Y_valid = Y.iloc[train_idx] , Y.iloc[valid_idx]
 
-            X_train, X_valid = X.iloc[train_idx], X.iloc[valid_idx]
-            Y_train , Y_valid = Y.iloc[train_idx] , Y.iloc[valid_idx]
+#             model = CatBoostClassifier(**param).fit(X_train, Y_train)
+#             preds_valid = model.predict_proba(X_valid)[:, 1]
 
-            model = LGBMClassifier(**param).fit(X_train, Y_train)
+#             score = roc_auc_score(Y_valid, preds_valid)
+#             scores.append(score)
 
-            preds_valid = model.predict_proba(X_valid)[:, 1]
-
-            score = roc_auc_score(Y_valid, preds_valid)
-            scores.append(score)
-
-        return np.mean(scores)
+#         return np.mean(scores)
     
-## Defining SEED and Trials
+# ## Defining number of runs and seed
+# # RUNS = 2
 SEED = 42
-N_TRIALS = 70
+# N_TRIALS = 50
 
-# Execute an optimization
-study = optuna.create_study(direction = 'maximize')
-study.optimize(Objective(SEED), n_trials = N_TRIALS)
+# # Execute an optimization
+# study = optuna.create_study(direction = 'maximize')
+# study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
+# print('----------------------------------------')
+# print(' (-: Saving Optuna Hyper-Parameters :-) ')
+# print('----------------------------------------')
 
-##################
-## CV Procedure ##
-##################
+# optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+# file_name = 'CatBoost_FS_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+# optuna_hyper_params.to_csv(file_name, index = False)
 
 print('-----------------------------')
 print(' (-: Starting CV process :-) ')
 print('-----------------------------')
 
-
 cv_scores, roc_auc_scores = list(), list()
-preds = list() 
+preds = list()
 
 ## Running 5 times CV
-for i in range(5):
+for i in tqdm(range(5)):
     
     skf = StratifiedKFold(n_splits = 5, random_state = 42, shuffle = True)
     
@@ -232,28 +251,39 @@ for i in range(5):
         Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
     
         ## Building RF model
-        lgb_md = LGBMClassifier(**study.best_trial.params).fit(X_train, Y_train)
+#         cat_md = CatBoostClassifier(**study.best_trial.params, 
+#                                     verbose = False).fit(X_train, Y_train)
+        cat_md = CatBoostClassifier(loss_function = 'Logloss',
+                                    eval_metric = 'AUC',
+                                    iterations = 3287,
+                                    learning_rate = 0.06487165843182341,
+                                    depth = 5,
+                                    random_strength = 0.34199641155092914,
+                                    bagging_temperature = 0.81496844524381,
+                                    border_count = 255,
+                                    l2_leaf_reg = 25, 
+                                    verbose = False).fit(X_train, Y_train)
         
         ## Predicting on X_test and test
-        lgb_pred_1 = lgb_md.predict_proba(X_test)[:, 1]
-        lgb_pred_2 = lgb_md.predict_proba(test_lgb)[:, 1]
+        cat_pred_1 = cat_md.predict_proba(X_test)[:, 1]
+        cat_pred_2 = cat_md.predict_proba(test_cat)[:, 1]
         
         ## Computing roc-auc score
-        roc_auc_scores.append(roc_auc_score(Y_test, lgb_pred_1))
-        preds.append(lgb_pred_2)
+        roc_auc_scores.append(roc_auc_score(Y_test, cat_pred_1))
+        preds.append(cat_pred_2)
         
     cv_scores.append(np.mean(roc_auc_scores))
-    
-lgb_cv_score = np.mean(cv_scores)    
-print('The oof roc-auc score over 5-folds (run 5 times) is:', lgb_cv_score)
+
+cat_cv_score = np.mean(cv_scores)    
+print('The roc-auc score over 5-folds (run 5 times) is:', cat_cv_score)
 
 ###############################
 ## Consolidating Predictions ##
 ###############################
 
-lgb_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
+cat_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
 clean_pred = pd.DataFrame({'id': test_clean['id']})
-clean_pred['booking_status_clean'] = lgb_preds_test
+clean_pred['booking_status_clean'] = cat_preds_test
 
 dup_pred = duplicates[['id_y', 'booking_status']]
 dup_pred.columns = ['id', 'booking_status_dup']
@@ -264,4 +294,10 @@ submission = pd.merge(submission, dup_pred, on = 'id', how = 'left')
 submission['booking_status'] = np.where(np.isnan(submission['booking_status_clean']), submission['booking_status_dup'], submission['booking_status_clean'])
 submission.drop(columns = ['booking_status_clean', 'booking_status_dup'], axis = 1, inplace = True)
 
-submission.to_csv('LightGBM_Leakage_3.csv', index = False)
+file_name = 'CatBoost_Leakage_2_' + str(SEED) + '_.csv'
+submission.to_csv(file_name, index = False)
+# CV_scores.to_csv(file_name, index = False)
+
+print('--------------------------')    
+print('...The process finished...')    
+print('--------------------------')

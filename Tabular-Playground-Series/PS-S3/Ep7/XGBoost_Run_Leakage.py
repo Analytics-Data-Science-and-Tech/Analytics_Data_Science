@@ -2,6 +2,8 @@ import boto3
 import pandas as pd; pd.set_option('display.max_columns', 100)
 import numpy as np
 
+from tqdm import tqdm
+
 import matplotlib.pyplot as plt; plt.style.use('ggplot')
 import seaborn as sns
 
@@ -15,9 +17,9 @@ from sklearn.metrics import mean_squared_error, roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
-from lightgbm import LGBMClassifier
+# from lightgbm import xgbMClassifier
 from xgboost import XGBClassifier
-from catboost import CatBoostClassifier
+# from catboost import CatBoostClassifier
 
 import optuna 
 
@@ -97,43 +99,70 @@ test['segment_1_year_flag'] = np.where(((test['market_segment_type'] == 1) & (te
 test['price_lead_time_flag'] = np.where(((test['avg_price_per_room'] > 100) & (test['lead_time'] > 150)), 1, 0)
 
 
-#########################
-## Removing Duplicates ##
-#########################
+##########################
+## Splitting Duplicates ##
+##########################
 
-train = train.rename(columns = {'id': 'id_train'})
-test = test.rename(columns = {'id': 'id_test'})
+train_dup = train.copy()
+test_dup = test.copy()
 
-duplicates = 
+duplicates = pd.merge(train, test, on = train_dup.columns.tolist()[1:18])
+train_dup_ids = duplicates['id_x'].tolist()
+test_dup_ids = duplicates['id_y'].tolist()
+
+train_clean = train[~np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
+train_dup = train[np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
+
+test_clean = test[~np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
+test_dup = test[np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
 
 
 #######################
 ## Feature Selection ##
 #######################
 
-print('-----------------------------')
-print('Feature Selection Started')
-print('-----------------------------')
+print('-----------------------------------')
+print(' (-: Feature Selection Started :-) ')
+print('-----------------------------------')
 
 
-X = train.drop(columns = ['id', 'low_price_flag', 'no_of_adults', 'no_of_children', 'no_of_weekend_nights', 'no_of_week_nights', 'booking_status'], axis = 1)
-Y = train['booking_status'] 
+X = train_clean.drop(columns = ['id', 'low_price_flag', 'no_of_adults', 'no_of_children', 'no_of_weekend_nights', 'no_of_week_nights', 'booking_status'], axis = 1)
+Y = train_clean['booking_status'] 
 
-auto_feature_selection = RFECV(estimator = XGBClassifier(), step = 1, min_features_to_select = 5, cv = 5, scoring = 'roc_auc', n_jobs = -1).fit(X, Y)
+## Running RFECV multiple times
+RFE_results = list()
 
-print(X.columns[auto_feature_selection.support_])
+for i in tqdm(range(0, 10)):
+    
+    auto_feature_selection = RFECV(estimator = XGBClassifier(), step = 1, min_features_to_select = 2, cv = 5, scoring = 'roc_auc', n_jobs = -1).fit(X, Y)
+    
+    ## Extracting and storing features to be selected
+    RFE_results.append(auto_feature_selection.support_)
+
+## Changing to data-frame
+RFE_results = pd.DataFrame(RFE_results)
+RFE_results.columns = X.columns
+
+## Computing the percentage of time features are flagged as important
+RFE_results = 100*RFE_results.apply(np.sum, axis = 0) / RFE_results.shape[0]
+
+## Identifying features with a percentage score > 80%
+features_to_select = RFE_results.index[RFE_results > 80].tolist()
+print(features_to_select)
 
 ############
 ## Optuna ##
 ############
 
-print('-----------------------------')
-print('Optuna Optimization Started')
-print('-----------------------------')
+print('-------------------------------------')
+print(' (-: Optuna Optimization Started :-) ')
+print('-------------------------------------')
 
 
-X = X[X.columns[auto_feature_selection.support_]]
-test_XGB = test[X.columns[auto_feature_selection.support_]]
+X = train_clean[features_to_select]
+Y = train_clean['booking_status']
+
+test_xgb = test_clean[features_to_select]
 
 class Objective:
 
@@ -173,47 +202,33 @@ class Objective:
         return np.mean(scores)
     
 ## Defining number of runs and seed
-RUNS = 50
+# RUNS = 50
 SEED = 42
-N_TRIALS = 50
+N_TRIALS = 60
 
 # Execute an optimization
 study = optuna.create_study(direction = 'maximize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
-print('-----------------------------')
-print('Saving Optuna Hyper-Parameters')
-print('-----------------------------')
+print('----------------------------------------')
+print(' (-: Saving Optuna Hyper-Parameters :-) ')
+print('----------------------------------------')
 
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
 file_name = 'XGB_FS_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
 optuna_hyper_params.to_csv(file_name, index = False)
 
 print('-----------------------------')
-print('Starting CV process')
+print(' (-: Starting CV process :-) ')
 print('-----------------------------')
-
-# X = train[['type_of_meal_plan', 'required_car_parking_space', 'room_type_reserved',
-#        'lead_time', 'arrival_year', 'arrival_month', 'market_segment_type',
-#        'repeated_guest', 'avg_price_per_room', 'no_of_special_requests',
-#        'segment_1', 'total_guests', 'stay_length', 'stay_during_weekend',
-#        'quarter_2', 'quarter_3', 'segment_0_feature_1', 'segment_1_feature_1',
-#        'segment_1_feature_2', 'segment_1_year_flag', 'price_lead_time_flag']]
-# Y = train['booking_status']
-# test_XGB = test[['type_of_meal_plan', 'required_car_parking_space', 'room_type_reserved',
-#        'lead_time', 'arrival_year', 'arrival_month', 'market_segment_type',
-#        'repeated_guest', 'avg_price_per_room', 'no_of_special_requests',
-#        'segment_1', 'total_guests', 'stay_length', 'stay_during_weekend',
-#        'quarter_2', 'quarter_3', 'segment_0_feature_1', 'segment_1_feature_1',
-#        'segment_1_feature_2', 'segment_1_year_flag', 'price_lead_time_flag']]
 
 XGB_cv_scores, roc_auc_scores = list(), list()
 preds = list()
 
 ## Running 5 times CV
-for i in range(5):
+for i in tqdm(range(5)):
     
-    skf = StratifiedKFold(n_splits = 5, random_state = 42, shuffle = True)
+    skf = StratifiedKFold(n_splits = 5, random_state = SEED, shuffle = True)
     
     for train_ix, test_ix in skf.split(X, Y):
         
@@ -222,19 +237,12 @@ for i in range(5):
         Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
                 
         ## Building RF model
-#         XGB_md = XGBClassifier(**study.best_trial.params).fit(X_train, Y_train)
-        XGB_md = XGBClassifier(tree_method = 'hist',
-                               colsample_bytree = 0.3785810426716012, 
-                               gamma = 0.8723616924377348, 
-                               learning_rate = 0.005325963175791756, 
-                               max_depth = 9, 
-                               min_child_weight = 1, 
-                               n_estimators = 8796, 
-                               subsample = 0.7011532734195687).fit(X_train, Y_train)
+        XGB_md = XGBClassifier(**study.best_trial.params).fit(X_train, Y_train)
+#         XGB_md = XGBClassifier().fit(X_train, Y_train)
         
         ## Predicting on X_test and test
         XGB_pred_1 = XGB_md.predict_proba(X_test)[:, 1]
-        XGB_pred_2 = XGB_md.predict_proba(test_XGB)[:, 1]
+        XGB_pred_2 = XGB_md.predict_proba(test_xgb)[:, 1]
         
         ## Computing roc-auc score
         roc_auc_scores.append(roc_auc_score(Y_test, XGB_pred_1))
@@ -245,13 +253,27 @@ for i in range(5):
 XGB_cv_score = np.mean(XGB_cv_scores)    
 print('The average oof roc-auc score over 5-folds (run 5 times) is:', XGB_cv_score)
 
-XGB_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
-submission['booking_status'] = XGB_preds_test
+###############################
+## Consolidating Predictions ##
+###############################
 
-file_name = 'XGB_FS_Seed_' + str(SEED) + '_CV_Score.csv'
+xgb_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
+clean_pred = pd.DataFrame({'id': test_clean['id']})
+clean_pred['booking_status_clean'] = xgb_preds_test
+
+dup_pred = duplicates[['id_y', 'booking_status']]
+dup_pred.columns = ['id', 'booking_status_dup']
+dup_pred['booking_status_dup'] = 1 - dup_pred['booking_status_dup']
+
+submission = pd.merge(submission.drop(columns = 'booking_status', axis = 1), clean_pred, on = 'id', how = 'left')
+submission = pd.merge(submission, dup_pred, on = 'id', how = 'left')
+submission['booking_status'] = np.where(np.isnan(submission['booking_status_clean']), submission['booking_status_dup'], submission['booking_status_clean'])
+submission.drop(columns = ['booking_status_clean', 'booking_status_dup'], axis = 1, inplace = True)
+
+file_name = 'XGBoost_Leakage_2_' + str(SEED) + '_.csv'
 submission.to_csv(file_name, index = False)
 # CV_scores.to_csv(file_name, index = False)
 
-print('-----------------------------')    
-print('The process finished...')    
-print('-----------------------------')
+print('--------------------------')    
+print('...The process finished...')    
+print('--------------------------')

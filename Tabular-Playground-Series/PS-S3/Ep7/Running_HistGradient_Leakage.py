@@ -133,7 +133,7 @@ result = permutation_importance(hist_md, X_val, Y_val, n_repeats = 50, scoring =
 feature_imp = pd.DataFrame({'Feature': X.columns , 'Imp': result.importances_mean})
 feature_imp.sort_values(by = 'Imp', ascending = False, inplace = True)
 feature_imp.reset_index(drop = True, inplace = True)
-features_to_select = feature_imp['Feature'][0:16].tolist()
+features_to_select = feature_imp['Feature'][0:21].tolist()
 print(features_to_select)
 
 #########################
@@ -189,7 +189,7 @@ class Objective:
 ## Defining number of runs and seed
 # RUNS = 50
 SEED = 42
-N_TRIALS = 5
+N_TRIALS = 70
 
 # Execute an optimization
 study = optuna.create_study(direction = 'maximize')
@@ -250,4 +250,4 @@ submission = pd.merge(submission, dup_pred, on = 'id', how = 'left')
 submission['booking_status'] = np.where(np.isnan(submission['booking_status_clean']), submission['booking_status_dup'], submission['booking_status_clean'])
 submission.drop(columns = ['booking_status_clean', 'booking_status_dup'], axis = 1, inplace = True)
 
-submission.to_csv('LightGBM_Leakage_3.csv', index = False)
+submission.to_csv('Hist_Leakage_3_20_features.csv', index = False)

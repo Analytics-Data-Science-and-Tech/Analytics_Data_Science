@@ -133,7 +133,7 @@ result = permutation_importance(hist_md, X_val, Y_val, n_repeats = 50, scoring =
 feature_imp = pd.DataFrame({'Feature': X.columns , 'Imp': result.importances_mean})
 feature_imp.sort_values(by = 'Imp', ascending = False, inplace = True)
 feature_imp.reset_index(drop = True, inplace = True)
-feature_to_select = feature_imp['Feature'][0:16].tolist()
+features_to_select = feature_imp['Feature'][0:16].tolist()
 print(features_to_select)
 
 #########################

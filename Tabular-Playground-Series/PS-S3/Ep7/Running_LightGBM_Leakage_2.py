@@ -207,6 +207,7 @@ N_TRIALS = 70
 study = optuna.create_study(direction = 'maximize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
+print(**study.best_trial.params)
 
 ##################
 ## CV Procedure ##

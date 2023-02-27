@@ -207,61 +207,62 @@ N_TRIALS = 70
 study = optuna.create_study(direction = 'maximize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
+print(**study.best_trial.params)
 
-##################
-## CV Procedure ##
-##################
+# ##################
+# ## CV Procedure ##
+# ##################
 
-print('-----------------------------')
-print(' (-: Starting CV process :-) ')
-print('-----------------------------')
+# print('-----------------------------')
+# print(' (-: Starting CV process :-) ')
+# print('-----------------------------')
 
 
-cv_scores, roc_auc_scores = list(), list()
-preds = list() 
+# cv_scores, roc_auc_scores = list(), list()
+# preds = list() 
 
-## Running 5 times CV
-for i in range(5):
+# ## Running 5 times CV
+# for i in range(5):
     
-    skf = StratifiedKFold(n_splits = 5, random_state = 42, shuffle = True)
+#     skf = StratifiedKFold(n_splits = 5, random_state = 42, shuffle = True)
     
-    for train_ix, test_ix in skf.split(X, Y):
+#     for train_ix, test_ix in skf.split(X, Y):
         
-        ## Splitting the data 
-        X_train, X_test = X.iloc[train_ix], X.iloc[test_ix]
-        Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
+#         ## Splitting the data 
+#         X_train, X_test = X.iloc[train_ix], X.iloc[test_ix]
+#         Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
     
-        ## Building RF model
-        lgb_md = LGBMClassifier(**study.best_trial.params).fit(X_train, Y_train)
+#         ## Building RF model
+#         lgb_md = LGBMClassifier(**study.best_trial.params).fit(X_train, Y_train)
         
-        ## Predicting on X_test and test
-        lgb_pred_1 = lgb_md.predict_proba(X_test)[:, 1]
-        lgb_pred_2 = lgb_md.predict_proba(test_lgb)[:, 1]
+#         ## Predicting on X_test and test
+#         lgb_pred_1 = lgb_md.predict_proba(X_test)[:, 1]
+#         lgb_pred_2 = lgb_md.predict_proba(test_lgb)[:, 1]
         
-        ## Computing roc-auc score
-        roc_auc_scores.append(roc_auc_score(Y_test, lgb_pred_1))
-        preds.append(lgb_pred_2)
+#         ## Computing roc-auc score
+#         roc_auc_scores.append(roc_auc_score(Y_test, lgb_pred_1))
+#         preds.append(lgb_pred_2)
         
-    cv_scores.append(np.mean(roc_auc_scores))
+#     cv_scores.append(np.mean(roc_auc_scores))
     
-lgb_cv_score = np.mean(cv_scores)    
-print('The oof roc-auc score over 5-folds (run 5 times) is:', lgb_cv_score)
+# lgb_cv_score = np.mean(cv_scores)    
+# print('The oof roc-auc score over 5-folds (run 5 times) is:', lgb_cv_score)
 
-###############################
-## Consolidating Predictions ##
-###############################
+# ###############################
+# ## Consolidating Predictions ##
+# ###############################
 
-lgb_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
-clean_pred = pd.DataFrame({'id': test_clean['id']})
-clean_pred['booking_status_clean'] = lgb_preds_test
+# lgb_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
+# clean_pred = pd.DataFrame({'id': test_clean['id']})
+# clean_pred['booking_status_clean'] = lgb_preds_test
 
-dup_pred = duplicates[['id_y', 'booking_status']]
-dup_pred.columns = ['id', 'booking_status_dup']
-dup_pred['booking_status_dup'] = 1 - dup_pred['booking_status_dup']
+# dup_pred = duplicates[['id_y', 'booking_status']]
+# dup_pred.columns = ['id', 'booking_status_dup']
+# dup_pred['booking_status_dup'] = 1 - dup_pred['booking_status_dup']
 
-submission = pd.merge(submission.drop(columns = 'booking_status', axis = 1), clean_pred, on = 'id', how = 'left')
-submission = pd.merge(submission, dup_pred, on = 'id', how = 'left')
-submission['booking_status'] = np.where(np.isnan(submission['booking_status_clean']), submission['booking_status_dup'], submission['booking_status_clean'])
-submission.drop(columns = ['booking_status_clean', 'booking_status_dup'], axis = 1, inplace = True)
+# submission = pd.merge(submission.drop(columns = 'booking_status', axis = 1), clean_pred, on = 'id', how = 'left')
+# submission = pd.merge(submission, dup_pred, on = 'id', how = 'left')
+# submission['booking_status'] = np.where(np.isnan(submission['booking_status_clean']), submission['booking_status_dup'], submission['booking_status_clean'])
+# submission.drop(columns = ['booking_status_clean', 'booking_status_dup'], axis = 1, inplace = True)
 
-submission.to_csv('LightGBM_Leakage_3.csv', index = False)
+# submission.to_csv('LightGBM_Leakage_3.csv', index = False)

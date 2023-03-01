@@ -89,6 +89,11 @@ train_dup = train[np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
 test_clean = test[~np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
 test_dup = test[np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
 
+dup_pred_price = pd.DataFrame(train_dup.groupby(['clarity_scaled', 'cut_scaled', 'color_scaled'])['price'].mean()).reset_index()
+test_dup = pd.merge(test_dup, dup_pred_price, on = ['clarity_scaled', 'cut_scaled', 'color_scaled'], how = 'left')
+test_dup = test_dup[['id', 'price']]
+test_dup.columns = ['id', 'price_dup']
+
 ############
 ## Optuna ##
 ############
@@ -187,8 +192,17 @@ print('The average oof rmse score over 5-folds (run 5 times) is:', XGB_cv_score)
 
 xgb_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
 clean_pred = pd.DataFrame({'id': test_clean['id']})
-clean_pred['booking_status_clean'] = xgb_preds_test
+clean_pred['price_clean'] = xgb_preds_test
 
+submission.drop(columns = 'price', axis = 1, inplace = True)
+submission = pd.merge(submission, clean_pred, on = 'id', how = 'left')
+submission = pd.merge(submission, test_dup, on = 'id', how = 'left')
 
+submission['price'] = np.where(np.isnan(submission['price_dup']), submission['price_clean'], submission['price_dup'])
+submission.drop(columns = ['price_clean', 'price_dup'], axis = 1, inplace = True)
 
+submission.to_csv('XGB_leakage_submission.csv', index = False)
 
+print('--------------------------')    
+print('...The process finished...')    
+print('--------------------------')

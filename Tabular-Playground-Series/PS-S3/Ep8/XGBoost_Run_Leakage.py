@@ -163,11 +163,16 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 3
+N_TRIALS = 70
 
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
+
+optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+file_name = 'XGB_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+optuna_hyper_params.to_csv(file_name, index = False)
+
 
 print('----------------------------')
 print(' (-: Starting CV process :-)')
@@ -186,7 +191,8 @@ for i in tqdm(range(5)):
         Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
                 
         ## Building XGBoost model
-        xgb_md = XGBRegressor(**study.best_trial.params).fit(X_train, Y_train)
+        xgb_md = XGBRegressor(**study.best_trial.params, 
+                              tree_method = 'hist').fit(X_train, Y_train)
         
         ## Predicting on X_test and test
         xgb_pred_1 = xgb_md.predict(X_test)
@@ -205,7 +211,7 @@ print('The average oof rmse score over 5-folds (run 5 times) is:', xgb_cv_score)
 
 xgb_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
 clean_pred = pd.DataFrame({'id': test_clean['id']})
-clean_pred['price_clean'] = lgb_preds_test
+clean_pred['price_clean'] = xgb_preds_test
 
 submission.drop(columns = 'price', axis = 1, inplace = True)
 submission = pd.merge(submission, clean_pred, on = 'id', how = 'left')

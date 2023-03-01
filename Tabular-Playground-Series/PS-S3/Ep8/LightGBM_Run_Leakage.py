@@ -89,8 +89,24 @@ train_dup = train[np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
 test_clean = test[~np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
 test_dup = test[np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
 
-dup_pred_price = pd.DataFrame(train_dup.groupby(['clarity_scaled', 'cut_scaled', 'color_scaled'])['price'].mean()).reset_index()
-test_dup = pd.merge(test_dup, dup_pred_price, on = ['clarity_scaled', 'cut_scaled', 'color_scaled'], how = 'left')
+dup_pred_price = pd.DataFrame(train_dup.groupby(['carat',
+                                                 'depth',
+                                                 'table',
+                                                 'x',
+                                                 'y',
+                                                 'z',
+                                                 'clarity_scaled',
+                                                 'cut_scaled',
+                                                 'color_scaled'])['price'].mean()).reset_index()
+test_dup = pd.merge(test_dup, dup_pred_price, on = ['carat',
+                                                    'depth',
+                                                    'table',
+                                                    'x',
+                                                    'y',
+                                                    'z',
+                                                    'clarity_scaled',
+                                                    'cut_scaled',
+                                                    'color_scaled'], how = 'left')
 test_dup = test_dup[['id', 'price']]
 test_dup.columns = ['id', 'price_dup']
 
@@ -149,7 +165,7 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 50
+N_TRIALS = 3
 
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')
@@ -161,9 +177,9 @@ print('----------------------------')
 
 lgb_cv_scores, preds = list(), list()
 
-for i in range(5):
+for i in tqdm(range(5)):
 
-    skf = KFold(n_splits = 5, random_state = 42, shuffle = True)
+    skf = KFold(n_splits = 5, random_state = SEED, shuffle = True)
     
     for train_ix, test_ix in skf.split(X, Y):
         

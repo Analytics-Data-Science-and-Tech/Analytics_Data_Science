@@ -108,6 +108,7 @@ test_dup = pd.merge(test_dup, dup_pred_price, on = ['carat',
                                                     'cut_scaled',
                                                     'color_scaled'], how = 'left')
 test_dup = test_dup[['id', 'price']]
+test_dup.columns = ['id', 'price_dup']
 
 ############
 ## Optuna ##
@@ -131,9 +132,7 @@ class Objective:
     def __call__(self, trial):
         
         ## Parameters to be evaluated
-        param = dict(objective = 'reg:squarederror',
-                     eval_metric = 'rmse',
-                     tree_method = 'hist', 
+        param = dict(tree_method = 'hist', 
                      max_depth = trial.suggest_int('max_depth', 2, 10),
                      learning_rate = trial.suggest_float('learning_rate', 1e-4, 1e-1, log = True),
                      n_estimators = trial.suggest_int('n_estimators', 30, 10000),

@@ -159,7 +159,7 @@ print('----------------------------')
 print(' (-: Starting CV process :-)')
 print('----------------------------')
 
-XGB_cv_scores, preds = list(), list()
+lgb_cv_scores, preds = list(), list()
 
 for i in range(5):
 
@@ -172,27 +172,26 @@ for i in range(5):
         Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
                 
         ## Building XGBoost model
-        XGB_md = XGBRegressor(**study.best_trial.params,
-                              tree_method = 'hist').fit(X_train, Y_train)
+        lgb_md = LGBMRegressor(**study.best_trial.params).fit(X_train, Y_train)
         
         ## Predicting on X_test and test
-        XGB_pred_1 = XGB_md.predict(X_test)
-        XGB_pred_2 = XGB_md.predict(test_xgb)
+        lgb_pred_1 = lgb_md.predict(X_test)
+        lgb_pred_2 = lgb_md.predict(test_lgb)
         
         ## Computing rmse
-        XGB_cv_scores.append(mean_squared_error(Y_test, XGB_pred_1, squared = False))
-        preds.append(XGB_pred_2)
+        lgb_cv_scores.append(mean_squared_error(Y_test, lgb_pred_1, squared = False))
+        preds.append(lgb_pred_2)
 
-XGB_cv_score = np.mean(XGB_cv_scores)    
-print('The average oof rmse score over 5-folds (run 5 times) is:', XGB_cv_score)
+lgb_cv_score = np.mean(lgb_cv_scores)    
+print('The average oof rmse score over 5-folds (run 5 times) is:', lgb_cv_score)
 
 ###############################
 ## Consolidating Predictions ##
 ###############################
 
-xgb_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
+lgb_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
 clean_pred = pd.DataFrame({'id': test_clean['id']})
-clean_pred['price_clean'] = xgb_preds_test
+clean_pred['price_clean'] = lgb_preds_test
 
 submission.drop(columns = 'price', axis = 1, inplace = True)
 submission = pd.merge(submission, clean_pred, on = 'id', how = 'left')
@@ -201,7 +200,7 @@ submission = pd.merge(submission, test_dup, on = 'id', how = 'left')
 submission['price'] = np.where(np.isnan(submission['price_dup']), submission['price_clean'], submission['price_dup'])
 submission.drop(columns = ['price_clean', 'price_dup'], axis = 1, inplace = True)
 
-submission.to_csv('XGB_leakage_submission.csv', index = False)
+submission.to_csv('lgb_leakage_submission.csv', index = False)
 
 print('--------------------------')    
 print('...The process finished...')    

@@ -149,7 +149,7 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 3
+N_TRIALS = 50
 
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')
@@ -200,7 +200,7 @@ submission = pd.merge(submission, test_dup, on = 'id', how = 'left')
 submission['price'] = np.where(np.isnan(submission['price_dup']), submission['price_clean'], submission['price_dup'])
 submission.drop(columns = ['price_clean', 'price_dup'], axis = 1, inplace = True)
 
-submission.to_csv('lgb_leakage_submission.csv', index = False)
+submission.to_csv('lgb_leakage_submission_1.csv', index = False)
 
 print('--------------------------')    
 print('...The process finished...')    

@@ -164,7 +164,7 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 5
+N_TRIALS = 3
 
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')
@@ -176,9 +176,9 @@ print('----------------------------')
 
 xgb_cv_scores, preds = list(), list()
 
-for i in tqdmrange(5)):
+for i in tqdm(range(5)):
 
-    skf = KFold(n_splits = 5, random_state = 42, shuffle = True)
+    skf = KFold(n_splits = 5, random_state = SEED, shuffle = True)
     
     for train_ix, test_ix in skf.split(X, Y):
         

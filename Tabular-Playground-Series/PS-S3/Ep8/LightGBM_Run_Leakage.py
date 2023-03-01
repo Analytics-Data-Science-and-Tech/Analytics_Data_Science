@@ -165,11 +165,15 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 3
+N_TRIALS = 70
 
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
+
+optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+file_name = 'LGBM_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+optuna_hyper_params.to_csv(file_name, index = False)
 
 print('----------------------------')
 print(' (-: Starting CV process :-)')

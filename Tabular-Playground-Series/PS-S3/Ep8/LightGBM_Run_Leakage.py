@@ -84,6 +84,8 @@ train_dup_ids = duplicates['id_x'].tolist()
 test_dup_ids = duplicates['id_y'].tolist()
 
 train_clean = train[~np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
+train_clean_clean = train_clean.drop(columns = 'id', axis = 1)
+train_clean_clean = pd.DataFrame(train_clean_clean.groupby(to_consider)['price'].mean()).reset_index()
 train_dup = train[np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
 
 test_clean = test[~np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
@@ -118,8 +120,8 @@ print('------------------------------------')
 print(' (-: Optuna Optimization Started :-)')
 print('------------------------------------')
 
-X = train_clean.drop(columns = ['id', 'price'], axis = 1)
-Y = train_clean['price']
+X = train_clean_clean.drop(columns = ['id', 'price'], axis = 1)
+Y = train_clean_clean['price']
 
 test_lgb = test_clean.drop(columns = 'id', axis = 1)
 
@@ -220,7 +222,7 @@ submission = pd.merge(submission, test_dup, on = 'id', how = 'left')
 submission['price'] = np.where(np.isnan(submission['price_dup']), submission['price_clean'], submission['price_dup'])
 submission.drop(columns = ['price_clean', 'price_dup'], axis = 1, inplace = True)
 
-submission.to_csv('lgb_leakage_submission_1.csv', index = False)
+submission.to_csv('lgb_leakage_submission_2.csv', index = False)
 
 print('--------------------------')    
 print('...The process finished...')    

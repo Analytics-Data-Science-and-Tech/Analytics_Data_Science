@@ -84,6 +84,8 @@ train_dup_ids = duplicates['id_x'].tolist()
 test_dup_ids = duplicates['id_y'].tolist()
 
 train_clean = train[~np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
+train_clean_clean = train_clean.drop(columns = 'id', axis = 1)
+train_clean_clean = pd.DataFrame(train_clean_clean.groupby(to_consider)['price'].mean()).reset_index()
 train_dup = train[np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
 
 test_clean = test[~np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
@@ -118,8 +120,8 @@ print('------------------------------------')
 print(' (-: Optuna Optimization Started :-)')
 print('------------------------------------')
 
-X = train_clean.drop(columns = ['id', 'price'], axis = 1)
-Y = train_clean['price']
+X = train_clean_clean.drop(columns = ['price'], axis = 1)
+Y = train_clean_clean['price']
 
 test_xgb = test_clean.drop(columns = 'id', axis = 1)
 
@@ -163,11 +165,16 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 3
+N_TRIALS = 70
 
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
+
+optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+file_name = 'XGB_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+optuna_hyper_params.to_csv(file_name, index = False)
+
 
 print('----------------------------')
 print(' (-: Starting CV process :-)')
@@ -186,7 +193,8 @@ for i in tqdm(range(5)):
         Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
                 
         ## Building XGBoost model
-        xgb_md = XGBRegressor(**study.best_trial.params).fit(X_train, Y_train)
+        xgb_md = XGBRegressor(**study.best_trial.params, 
+                              tree_method = 'hist').fit(X_train, Y_train)
         
         ## Predicting on X_test and test
         xgb_pred_1 = xgb_md.predict(X_test)
@@ -205,7 +213,7 @@ print('The average oof rmse score over 5-folds (run 5 times) is:', xgb_cv_score)
 
 xgb_preds_test = pd.DataFrame(preds).apply(np.mean, axis = 0)
 clean_pred = pd.DataFrame({'id': test_clean['id']})
-clean_pred['price_clean'] = lgb_preds_test
+clean_pred['price_clean'] = xgb_preds_test
 
 submission.drop(columns = 'price', axis = 1, inplace = True)
 submission = pd.merge(submission, clean_pred, on = 'id', how = 'left')
@@ -214,7 +222,7 @@ submission = pd.merge(submission, test_dup, on = 'id', how = 'left')
 submission['price'] = np.where(np.isnan(submission['price_dup']), submission['price_clean'], submission['price_dup'])
 submission.drop(columns = ['price_clean', 'price_dup'], axis = 1, inplace = True)
 
-submission.to_csv('xgb_leakage_submission_1.csv', index = False)
+submission.to_csv('xgb_leakage_submission_2.csv', index = False)
 
 print('--------------------------')    
 print('...The process finished...')    

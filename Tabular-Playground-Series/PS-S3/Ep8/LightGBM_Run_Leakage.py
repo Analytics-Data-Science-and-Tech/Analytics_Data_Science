@@ -84,13 +84,31 @@ train_dup_ids = duplicates['id_x'].tolist()
 test_dup_ids = duplicates['id_y'].tolist()
 
 train_clean = train[~np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
+train_clean_clean = train_clean.drop(columns = 'id', axis = 1)
+train_clean_clean = pd.DataFrame(train_clean_clean.groupby(to_consider)['price'].mean()).reset_index()
 train_dup = train[np.isin(train['id'], train_dup_ids)].reset_index(drop = True)
 
 test_clean = test[~np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
 test_dup = test[np.isin(test['id'], test_dup_ids)].reset_index(drop = True)
 
-dup_pred_price = pd.DataFrame(train_dup.groupby(['clarity_scaled', 'cut_scaled', 'color_scaled'])['price'].mean()).reset_index()
-test_dup = pd.merge(test_dup, dup_pred_price, on = ['clarity_scaled', 'cut_scaled', 'color_scaled'], how = 'left')
+dup_pred_price = pd.DataFrame(train_dup.groupby(['carat',
+                                                 'depth',
+                                                 'table',
+                                                 'x',
+                                                 'y',
+                                                 'z',
+                                                 'clarity_scaled',
+                                                 'cut_scaled',
+                                                 'color_scaled'])['price'].mean()).reset_index()
+test_dup = pd.merge(test_dup, dup_pred_price, on = ['carat',
+                                                    'depth',
+                                                    'table',
+                                                    'x',
+                                                    'y',
+                                                    'z',
+                                                    'clarity_scaled',
+                                                    'cut_scaled',
+                                                    'color_scaled'], how = 'left')
 test_dup = test_dup[['id', 'price']]
 test_dup.columns = ['id', 'price_dup']
 
@@ -102,8 +120,8 @@ print('------------------------------------')
 print(' (-: Optuna Optimization Started :-)')
 print('------------------------------------')
 
-X = train_clean.drop(columns = ['id', 'price'], axis = 1)
-Y = train_clean['price']
+X = train_clean_clean.drop(columns = ['id', 'price'], axis = 1)
+Y = train_clean_clean['price']
 
 test_lgb = test_clean.drop(columns = 'id', axis = 1)
 
@@ -149,11 +167,15 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 50
+N_TRIALS = 70
 
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
+
+optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+file_name = 'LGBM_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+optuna_hyper_params.to_csv(file_name, index = False)
 
 print('----------------------------')
 print(' (-: Starting CV process :-)')
@@ -161,9 +183,9 @@ print('----------------------------')
 
 lgb_cv_scores, preds = list(), list()
 
-for i in range(5):
+for i in tqdm(range(5)):
 
-    skf = KFold(n_splits = 5, random_state = 42, shuffle = True)
+    skf = KFold(n_splits = 5, random_state = SEED, shuffle = True)
     
     for train_ix, test_ix in skf.split(X, Y):
         
@@ -200,7 +222,7 @@ submission = pd.merge(submission, test_dup, on = 'id', how = 'left')
 submission['price'] = np.where(np.isnan(submission['price_dup']), submission['price_clean'], submission['price_dup'])
 submission.drop(columns = ['price_clean', 'price_dup'], axis = 1, inplace = True)
 
-submission.to_csv('lgb_leakage_submission_1.csv', index = False)
+submission.to_csv('lgb_leakage_submission_2.csv', index = False)
 
 print('--------------------------')    
 print('...The process finished...')    

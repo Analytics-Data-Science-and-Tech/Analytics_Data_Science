@@ -99,7 +99,7 @@ SEED = 42
 N_TRIALS = 70
 
 # Execute an optimization
-study = optuna.create_study(direction = 'maximize')
+study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])

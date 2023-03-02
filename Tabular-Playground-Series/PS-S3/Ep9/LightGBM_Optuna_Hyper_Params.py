@@ -48,3 +48,68 @@ train_no_dup = pd.DataFrame(train_no_dup.groupby(train_no_dup.columns.tolist()[0
 
 X = train_no_dup.drop(columns = ['Strength'], axis = 1)
 Y = train_no_dup['Strength']
+
+############
+## Optuna ##
+############
+
+print('------------------------------------')
+print(' (-: Optuna Optimization Started :-)')
+print('------------------------------------')
+
+X = train_clean_clean.drop(columns = ['price'], axis = 1)
+Y = train_clean_clean['price']
+
+test_lgb = test_clean.drop(columns = 'id', axis = 1)
+
+class Objective:
+
+    def __init__(self, seed):
+        # Hold this implementation specific arguments as the fields of the class.
+        self.seed = seed
+
+    def __call__(self, trial):
+        
+        ## Parameters to be evaluated
+        param = dict(metric = 'rmse',
+                     boosting_type = 'gbdt', 
+                     n_estimators = trial.suggest_int('n_estimators', 300, 10000),
+                     learning_rate = trial.suggest_float('learning_rate', 0.001, 1, log = True),
+                     max_depth = trial.suggest_int('max_depth', 3, 12),
+                     lambda_l1 = trial.suggest_float('lambda_l1', 0.01, 10.0, log = True),
+                     lambda_l2 = trial.suggest_float('lambda_l2', 0.01, 10.0, log = True),
+                     num_leaves = trial.suggest_int('num_leaves', 2, 100),
+                     bagging_fraction = trial.suggest_float('bagging_fraction', 0.2, 0.9),
+                     feature_fraction = trial.suggest_float('feature_fraction', 0.2, 0.9)
+#                      device = 'gpu'
+                    )
+
+        scores = []
+        
+        skf = KFold(n_splits = 5, shuffle = True, random_state = self.seed)
+
+        for train_idx, valid_idx in skf.split(X, Y):
+
+            X_train, X_valid = X.iloc[train_idx], X.iloc[valid_idx]
+            Y_train , Y_valid = Y.iloc[train_idx] , Y.iloc[valid_idx]
+
+            model = LGBMRegressor(**param).fit(X_train, Y_train)
+
+            preds_valid = model.predict(X_valid)
+
+            score = mean_squared_error(Y_valid, preds_valid, squared = False)
+            scores.append(score)
+
+        return np.mean(scores)
+    
+## Defining SEED and Trials
+SEED = 42
+N_TRIALS = 70
+
+# Execute an optimization
+study = optuna.create_study(direction = 'minimize')
+study.optimize(Objective(SEED), n_trials = N_TRIALS)
+
+optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+file_name = 'LGBM_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+optuna_hyper_params.to_csv(file_name, index = False)

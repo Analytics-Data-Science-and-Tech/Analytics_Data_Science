@@ -120,7 +120,7 @@ print('------------------------------------')
 print(' (-: Optuna Optimization Started :-)')
 print('------------------------------------')
 
-X = train_clean_clean.drop(columns = ['id', 'price'], axis = 1)
+X = train_clean_clean.drop(columns = ['price'], axis = 1)
 Y = train_clean_clean['price']
 
 test_lgb = test_clean.drop(columns = 'id', axis = 1)

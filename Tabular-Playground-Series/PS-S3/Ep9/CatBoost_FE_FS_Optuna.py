@@ -102,7 +102,7 @@ RFE_results = list()
 
 for i in tqdm(range(0, 10)):
     
-    auto_feature_selection = RFECV(estimator = CatBoostRegressor(), step = 1, min_features_to_select = 2, cv = 5, scoring = 'neg_root_mean_squared_error', n_jobs = -1).fit(X, Y)
+    auto_feature_selection = RFECV(estimator = CatBoostRegressor(verbose = False), step = 1, min_features_to_select = 2, cv = 5, scoring = 'neg_root_mean_squared_error', n_jobs = -1).fit(X, Y)
     
     ## Extracting and storing features to be selected
     RFE_results.append(auto_feature_selection.support_)

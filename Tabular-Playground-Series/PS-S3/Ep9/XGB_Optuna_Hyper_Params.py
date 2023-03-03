@@ -49,6 +49,8 @@ train_no_dup = pd.DataFrame(train_no_dup.groupby(train_no_dup.columns.tolist()[0
 X = train_no_dup.drop(columns = ['Strength'], axis = 1)
 Y = train_no_dup['Strength']
 
+X['WaterComponent_to_Cement_ratio'] = X['WaterComponent'] / (X['CementComponent'] + 1e-6)
+
 ############
 ## Optuna ##
 ############
@@ -104,5 +106,5 @@ study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
-file_name = 'XGB_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+file_name = 'XGB_Seed_' + str(SEED) + '_Optuna_Hyperparameters_1.csv'
 optuna_hyper_params.to_csv(file_name, index = False)

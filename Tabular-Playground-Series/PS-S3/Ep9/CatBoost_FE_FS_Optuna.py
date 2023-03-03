@@ -2,6 +2,8 @@ import boto3
 import pandas as pd; pd.set_option('display.max_columns', 100)
 import numpy as np
 
+from tqdm import tqdm
+
 import matplotlib.pyplot as plt; plt.style.use('ggplot')
 import seaborn as sns
 
@@ -10,6 +12,7 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.tree import DecisionTreeRegressor, plot_tree
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import KFold, train_test_split, GridSearchCV, StratifiedKFold, TimeSeriesSplit
+from sklearn.feature_selection import RFE, RFECV
 from sklearn.metrics import mean_squared_error, roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
@@ -49,7 +52,72 @@ train_no_dup = pd.DataFrame(train_no_dup.groupby(train_no_dup.columns.tolist()[0
 X = train_no_dup.drop(columns = ['Strength'], axis = 1)
 Y = train_no_dup['Strength']
 
-X['WaterComponent_to_Cement_ratio'] = X['WaterComponent'] / (X['CementComponent'] + 1e-6)
+
+#########################
+## Feature Engineering ##
+#########################
+
+def feature_engineering(df):
+
+    df['amount'] = df[['CementComponent', 'BlastFurnaceSlag', 'FlyAshComponent', 'WaterComponent', 'SuperplasticizerComponent', 'CoarseAggregateComponent', 'FineAggregateComponent']].sum(axis=1)
+    df['CementComponent_ratio'] = df['CementComponent'] / (df['amount'] + 1e-6)
+    df['BlastFurnaceSlag_ratio'] = df['BlastFurnaceSlag'] / (df['amount'] + 1e-6)
+    df['FlyAshComponent_ratio'] = df['FlyAshComponent'] / (df['amount'] + 1e-6)
+    df['WaterComponent_ratio'] = df['WaterComponent'] / (df['amount'] + 1e-6)
+    df['SuperplasticizerComponent_ratio'] = df['SuperplasticizerComponent'] / (df['amount'] + 1e-6)
+    df['SuperplasticizerComponent_ratio'] = df['SuperplasticizerComponent'] / (df['amount'] + 1e-6)
+    df['FineAggregateComponent_ratio'] = df['FineAggregateComponent'] / (df['amount'] + 1e-6)
+    
+    # ratio to cement
+    df['BlastFurnaceSlag_to_Cement_ratio'] = df['BlastFurnaceSlag'] / (df['CementComponent'] + 1e-6)
+    df['FlyAshComponent_to_Cement_ratio'] = df['FlyAshComponent'] / (df['CementComponent'] + 1e-6)
+    df['WaterComponent_to_Cement_ratio'] = df['WaterComponent'] / (df['CementComponent'] + 1e-6)
+    df['SuperplasticizerComponent_to_Cement_ratio'] = df['SuperplasticizerComponent'] / (df['CementComponent'] + 1e-6)
+    df['CoarseAggregateComponent_to_Cement_ratio'] = df['CoarseAggregateComponent'] / (df['CementComponent'] + 1e-6)
+    df['FineAggregateComponent_to_Cement_ratio'] = df['FineAggregateComponent'] / (df['CementComponent'] + 1e-6)
+    
+    # other ratio
+    df['SuperplasticizerComponent_to_FlyAshComponent_ratio'] = df['SuperplasticizerComponent'] / (df['FlyAshComponent'] + 1e-6)
+    df['SuperplasticizerComponent_to_WaterComponent_ratio'] = df['SuperplasticizerComponent'] / (df['WaterComponent'] + 1e-6)
+    df['CoarseAggregateComponent_to_FineAggregateComponent_ratio'] = df['CoarseAggregateComponent'] / (df['FineAggregateComponent'] + 1e-6)
+    
+    return df
+
+train_no_dup = feature_engineering(train_no_dup)
+
+X = train_no_dup.drop(columns = ['Strength'], axis = 1)
+Y = train_no_dup['Strength']
+
+
+#######################
+## Feature Selection ##
+#######################
+
+print('-----------------------------------')
+print(' (-: Feature Selection Started :-) ')
+print('-----------------------------------')
+
+## Running RFECV multiple times
+RFE_results = list()
+
+for i in tqdm(range(0, 10)):
+    
+    auto_feature_selection = RFECV(estimator = CatBoostRegressor(iterations = 100, verbose = False), step = 1, min_features_to_select = 2, cv = 5, scoring = 'neg_root_mean_squared_error', n_jobs = -1).fit(X, Y)
+    
+    ## Extracting and storing features to be selected
+    RFE_results.append(auto_feature_selection.support_)
+
+## Changing to data-frame
+RFE_results = pd.DataFrame(RFE_results)
+RFE_results.columns = X.columns
+
+## Computing the percentage of time features are flagged as important
+RFE_results = 100*RFE_results.apply(np.sum, axis = 0) / RFE_results.shape[0]
+
+## Identifying features with a percentage score > 80%
+features_to_select = RFE_results.index[RFE_results > 80].tolist()
+print(features_to_select)
+
 
 ############
 ## Optuna ##
@@ -59,6 +127,8 @@ print('------------------------------------')
 print(' (-: Optuna Optimization Started :-)')
 print('------------------------------------')
 
+X = train_no_dup[features_to_select]
+Y = train_no_dup['Strength']
 
 class Objective:
 
@@ -105,5 +175,5 @@ study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
-file_name = 'CatBoost_Seed_' + str(SEED) + '_Optuna_Hyperparameters_1.csv'
+file_name = 'CatBoost_Seed_FE_FS_' + str(SEED) + '_Optuna_Hyperparameters.csv'
 optuna_hyper_params.to_csv(file_name, index = False)

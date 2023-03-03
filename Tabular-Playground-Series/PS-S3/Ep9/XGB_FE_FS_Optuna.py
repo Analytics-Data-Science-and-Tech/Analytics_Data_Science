@@ -12,6 +12,7 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.tree import DecisionTreeRegressor, plot_tree
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import KFold, train_test_split, GridSearchCV, StratifiedKFold, TimeSeriesSplit
+from sklearn.feature_selection import RFE, RFECV
 from sklearn.metrics import mean_squared_error, roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
@@ -101,7 +102,7 @@ RFE_results = list()
 
 for i in tqdm(range(0, 10)):
     
-    auto_feature_selection = RFECV(estimator = XGBClassifier(), step = 1, min_features_to_select = 2, cv = 5, scoring = 'roc_auc', n_jobs = -1).fit(X, Y)
+    auto_feature_selection = RFECV(estimator = XGBClassifier(), step = 1, min_features_to_select = 2, cv = 5, scoring = 'neg_root_mean_squared_error', n_jobs = -1).fit(X, Y)
     
     ## Extracting and storing features to be selected
     RFE_results.append(auto_feature_selection.support_)

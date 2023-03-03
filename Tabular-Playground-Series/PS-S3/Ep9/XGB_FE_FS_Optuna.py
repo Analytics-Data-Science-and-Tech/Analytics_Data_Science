@@ -2,6 +2,8 @@ import boto3
 import pandas as pd; pd.set_option('display.max_columns', 100)
 import numpy as np
 
+from tqdm import tqdm
+
 import matplotlib.pyplot as plt; plt.style.use('ggplot')
 import seaborn as sns
 
@@ -90,11 +92,30 @@ Y = train_no_dup['Strength']
 ## Feature Selection ##
 #######################
 
+print('-----------------------------------')
+print(' (-: Feature Selection Started :-) ')
+print('-----------------------------------')
 
+## Running RFECV multiple times
+RFE_results = list()
 
+for i in tqdm(range(0, 10)):
+    
+    auto_feature_selection = RFECV(estimator = XGBClassifier(), step = 1, min_features_to_select = 2, cv = 5, scoring = 'roc_auc', n_jobs = -1).fit(X, Y)
+    
+    ## Extracting and storing features to be selected
+    RFE_results.append(auto_feature_selection.support_)
 
+## Changing to data-frame
+RFE_results = pd.DataFrame(RFE_results)
+RFE_results.columns = X.columns
 
+## Computing the percentage of time features are flagged as important
+RFE_results = 100*RFE_results.apply(np.sum, axis = 0) / RFE_results.shape[0]
 
+## Identifying features with a percentage score > 80%
+features_to_select = RFE_results.index[RFE_results > 80].tolist()
+print(features_to_select)
 
 
 ############
@@ -104,6 +125,11 @@ Y = train_no_dup['Strength']
 print('------------------------------------')
 print(' (-: Optuna Optimization Started :-)')
 print('------------------------------------')
+
+
+X = train_no_dup[features_to_select]
+Y = train_no_dup['Strength']
+
 
 class Objective:
 
@@ -152,5 +178,5 @@ study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
-file_name = 'XGB_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+file_name = 'XGB_Seed_FE_FS' + str(SEED) + '_Optuna_Hyperparameters.csv'
 optuna_hyper_params.to_csv(file_name, index = False)

@@ -43,11 +43,14 @@ file_content_stream_3 = file_object_3.get('Body')
 ## Reading data files
 train = pd.read_csv(file_content_stream_1)
 
-train_no_dup = train.drop(columns = 'id', axis = 1)
-train_no_dup = pd.DataFrame(train_no_dup.groupby(train_no_dup.columns.tolist()[0:8])['Strength'].mean()).reset_index()
+# train_no_dup = train.drop(columns = 'id', axis = 1)
+# train_no_dup = pd.DataFrame(train_no_dup.groupby(train_no_dup.columns.tolist()[0:8])['Strength'].mean()).reset_index()
 
-X = train_no_dup.drop(columns = ['Strength'], axis = 1)
-Y = train_no_dup['Strength']
+# X = train_no_dup.drop(columns = ['Strength'], axis = 1)
+# Y = train_no_dup['Strength']
+
+X = train.drop(columns = ['Strength'], axis = 1)
+Y = train['Strength']
 
 X['WaterComponent_to_Cement_ratio'] = X['WaterComponent'] / (X['CementComponent'] + 1e-6)
 

@@ -14,9 +14,9 @@ from sklearn.metrics import mean_squared_error, roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
-from lightgbm import LGBMClassifier, LGBMRegressor 
+# from lightgbm import LGBMClassifier, LGBMRegressor 
 from xgboost import XGBClassifier, XGBRegressor
-from catboost import CatBoostClassifier, CatBoostRegressor
+# from catboost import CatBoostClassifier, CatBoostRegressor
 
 import optuna 
 
@@ -62,11 +62,6 @@ print('------------------------------------')
 print(' (-: Optuna Optimization Started :-)')
 print('------------------------------------')
 
-
-X = train_no_dup[features_to_select]
-Y = train_no_dup['Strength']
-
-
 class Objective:
 
     def __init__(self, seed):
@@ -89,18 +84,24 @@ class Objective:
 
         scores = []
         
-        skf = KFold(n_splits = 5, shuffle = True, random_state = self.seed)
-
-        for train_idx, valid_idx in skf.split(X, Y):
-
-            X_train, X_valid = X.iloc[train_idx], X.iloc[valid_idx]
-            Y_train , Y_valid = Y.iloc[train_idx] , Y.iloc[valid_idx]
-
+        for i in range(2010, 2022):
+    
+            train_data = man_train[man_train['Season'] <= i].reset_index(drop = True) 
+    
+            if ((i + 1) == 2020): 
+                continue 
+            else:
+                test_data = man_train[man_train['Season'] == (i + 1)].reset_index(drop = True)
+    
+            X_train = train_data.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
+            Y_train = train_data['ResultDiff']
+            X_valid = test_data.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
+            Y_valid = test_data['ResultDiff']
+        
             model = XGBRegressor(**param).fit(X_train, Y_train)
-
             preds_valid = model.predict(X_valid)
 
-            score = mean_squared_error(Y_valid, preds_valid, squared = False)
+            score = mean_squared_error(Y_valid, preds_valid)
             scores.append(score)
 
         return np.mean(scores)
@@ -112,3 +113,13 @@ N_TRIALS = 70
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
+
+## Building model with optuna parameters
+X = man_train.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
+Y = man_train['ResultDiff']
+
+xgb_md = XGBRegressor(**study.best_trial.params).fit(X, Y)
+
+xgb_pred_test = xgb_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points'], axis = 1))
+man_test['ResultDiff'] = xgb_pred_test
+man_test.to_csv('man_test.csv', index = False)

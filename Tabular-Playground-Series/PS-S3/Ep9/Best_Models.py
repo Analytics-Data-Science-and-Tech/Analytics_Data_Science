@@ -65,6 +65,8 @@ hist_md = HistGradientBoostingRegressor(l2_regularization = 0.01,
                                         max_bins = 255,
                                         min_samples_leaf = 10,
                                         max_leaf_nodes = 10).fit(X, Y)
+hist_pred = hist_md.predict(test_baseline)
+
 
 XGB_md = XGBRegressor(tree_method = 'hist',
                       colsample_bytree = 0.7, 
@@ -74,8 +76,8 @@ XGB_md = XGBRegressor(tree_method = 'hist',
                       min_child_weight = 10, 
                       n_estimators = 1000, 
                       subsample = 0.7).fit(X, Y)
-
 xgb_pred = XGB_md.predict(test_baseline)
+
 
 cat_md = CatBoostRegressor(loss_function = 'RMSE',
                            iterations = 1000,
@@ -86,8 +88,8 @@ cat_md = CatBoostRegressor(loss_function = 'RMSE',
                            border_count = 30,
                            l2_leaf_reg = 5,
                            verbose = False).fit(X, Y)
-
 cat_pred = cat_md.predict(test_baseline)
 
-submission['Strength'] = (cat_pred + xgb_pred) / 2
+
+submission['Strength'] = (cat_pred + xgb_pred + hist_pred) / 3
 submission.head()

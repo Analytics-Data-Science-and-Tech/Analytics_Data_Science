@@ -74,8 +74,8 @@ class Objective:
         param = dict(loss_function = 'RMSE',
                      iterations = trial.suggest_int('iterations', 300, 10000),
                      learning_rate = trial.suggest_float('learning_rate', 0.001, 1, log = True),
-#                      depth = trial.suggest_int('depth', 3, 12),
-                     depth = 3,
+                     depth = trial.suggest_int('depth', 3, 12),
+#                      depth = 3,
                      random_strength = trial.suggest_float('random_strength', 0.01, 10.0, log = True),
                      bagging_temperature = trial.suggest_float('bagging_temperature', 0.01,  0.99),
                      border_count = trial.suggest_int('border_count', 1, 255),
@@ -85,7 +85,7 @@ class Objective:
 
         scores = []
         
-        skf = KFold(n_splits = 5, shuffle = True, random_state = self.seed)
+        skf = KFold(n_splits = 10, shuffle = True, random_state = self.seed)
 
         for train_idx, valid_idx in skf.split(X, Y):
 
@@ -109,5 +109,5 @@ study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
-file_name = 'CatBoost_Seed_' + str(SEED) + '_Optuna_Hyperparameters_2.csv'
+file_name = 'CatBoost_Seed_' + str(SEED) + '_Optuna_Hyperparameters_3.csv'
 optuna_hyper_params.to_csv(file_name, index = False)

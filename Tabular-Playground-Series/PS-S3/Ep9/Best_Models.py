@@ -57,6 +57,14 @@ X['WaterComponent_to_Cement_ratio'] = X['WaterComponent'] / (X['CementComponent'
 test_baseline = test.drop(columns = ['id'], axis = 1)
 test_baseline['WaterComponent_to_Cement_ratio'] = test_baseline['WaterComponent'] / (test_baseline['CementComponent'] + 1e-6)
 
+GBR_md = GradientBoostingRegressor(n_estimators = 1000,
+                                   learning_rate = 0.01,
+                                   max_depth = 2,
+                                   min_samples_split = 2,
+                                   min_samples_leaf = 2).fit(X, Y)
+GBR_pred = GBR_md.predict(test_baseline)
+
+
 hist_md = HistGradientBoostingRegressor(l2_regularization = 0.01,
                                         early_stopping = False,
                                         learning_rate = 0.01,

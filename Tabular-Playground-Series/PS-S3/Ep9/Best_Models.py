@@ -99,5 +99,5 @@ cat_md = CatBoostRegressor(loss_function = 'RMSE',
 cat_pred = cat_md.predict(test_baseline)
 
 
-submission['Strength'] = (cat_pred + xgb_pred + hist_pred) / 3
+submission['Strength'] = (cat_pred + xgb_pred + hist_pred + GBR_pred) / 4
 submission.head()

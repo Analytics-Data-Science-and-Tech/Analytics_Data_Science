@@ -84,7 +84,7 @@ class Objective:
 
         scores = []
         
-        for i in range(2010, 2022):
+        for i in range(2013, 2022):
     
             train_data = woman_train[woman_train['Season'] <= i].reset_index(drop = True) 
     

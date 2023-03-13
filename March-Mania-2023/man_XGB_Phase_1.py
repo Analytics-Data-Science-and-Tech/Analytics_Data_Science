@@ -120,6 +120,6 @@ Y = man_train['ResultDiff']
 
 xgb_md = XGBRegressor(**study.best_trial.params).fit(X, Y)
 
-xgb_pred_test = xgb_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2'], axis = 1))
+xgb_pred_test = xgb_md.predict(man_test.drop(columns = ['ID''Season', 'T1', 'T2'], axis = 1))
 man_test['ResultDiff'] = round(xgb_pred_test)
 man_test.to_csv('man_test_xgb.csv', index = False)

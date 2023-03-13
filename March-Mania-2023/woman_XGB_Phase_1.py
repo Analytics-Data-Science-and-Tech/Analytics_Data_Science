@@ -12,7 +12,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import KFold, train_test_split, GridSearchCV, StratifiedKFold, TimeSeriesSplit
 from sklearn.metrics import mean_squared_error, roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier, HistGradientRegressor, GradientBoostingRegressor
+from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier, HistGradientBoostingRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LogisticRegression
 from lightgbm import LGBMClassifier, LGBMRegressor 
 from xgboost import XGBClassifier, XGBRegressor
@@ -84,7 +84,7 @@ class Objective:
 
         scores = []
         
-        for i in range(2010, 2022):
+        for i in range(2013, 2022):
     
             train_data = woman_train[woman_train['Season'] <= i].reset_index(drop = True) 
     
@@ -108,18 +108,26 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 70
+N_TRIALS = 50
 
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
-## Building model with optuna parameters
-X = man_train.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
-Y = man_train['ResultDiff']
+print('----------------------------------------')
+print(' (-: Saving Optuna Hyper-Parameters :-) ')
+print('----------------------------------------')
 
-xgb_md = XGBRegressor(**study.best_trial.params).fit(X, Y)
+optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+file_name = 'woman_XGB_Phase_1_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+optuna_hyper_params.to_csv(file_name, index = False)
 
-xgb_pred_test = xgb_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2'], axis = 1))
-man_test['ResultDiff'] = round(xgb_pred_test)
-man_test.to_csv('woman_test_xgb.csv', index = False)
+# ## Building model with optuna parameters
+# X = man_train.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
+# Y = man_train['ResultDiff']
+
+# xgb_md = XGBRegressor(**study.best_trial.params).fit(X, Y)
+
+# xgb_pred_test = xgb_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2'], axis = 1))
+# man_test['ResultDiff'] = round(xgb_pred_test)
+# man_test.to_csv('woman_test_xgb.csv', index = False)

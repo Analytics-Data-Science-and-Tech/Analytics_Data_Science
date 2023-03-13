@@ -12,7 +12,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import KFold, train_test_split, GridSearchCV, StratifiedKFold, TimeSeriesSplit
 from sklearn.metrics import mean_squared_error, roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier, HistGradientRegressor, GradientBoostingRegressor
+from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier, HistGradientBoostingRegressor, GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import LogisticRegression
 from lightgbm import LGBMClassifier, LGBMRegressor 
 from xgboost import XGBClassifier, XGBRegressor
@@ -71,33 +71,34 @@ class Objective:
     def __call__(self, trial):
         
         ## Parameters to be evaluated
-        param = dict(l2_regularization = trial.suggest_float('l2_regularization', 0.01, 10.0, log = True),
-                      early_stopping = trial.suggest_categorical('early_stopping', ['False']),
-                      learning_rate = trial.suggest_float('learning_rate', 0.001, 1, log = True),
-                      max_iter = trial.suggest_categorical('max_iter', [1000]),
-                      max_depth = trial.suggest_int('max_depth', 2, 15),
-                      max_bins = trial.suggest_int('max_bins', 100, 255),
-                      min_samples_leaf = trial.suggest_int('min_samples_leaf', 20, 100),
-                      max_leaf_nodes = trial.suggest_int('max_leaf_nodes', 20, 100)
+        param = dict(boosting_type = 'gbdt', 
+                     n_estimators = trial.suggest_int('n_estimators', 300, 10000),
+                     learning_rate = trial.suggest_float('learning_rate', 0.001, 1, log = True),
+                     max_depth = trial.suggest_int('max_depth', 3, 12),
+                     lambda_l1 = trial.suggest_float('lambda_l1', 0.01, 10.0, log = True),
+                     lambda_l2 = trial.suggest_float('lambda_l2', 0.01, 10.0, log = True),
+                     num_leaves = trial.suggest_int('num_leaves', 2, 100),
+                     bagging_fraction = trial.suggest_float('bagging_fraction', 0.2, 0.9),
+                     feature_fraction = trial.suggest_float('feature_fraction', 0.2, 0.9)
                     )
 
         scores = []
         
-        for i in range(2010, 2022):
+        for i in range(2013, 2022):
     
-            train_data = man_train[man_train['Season'] <= i].reset_index(drop = True) 
+            train_data = woman_train[woman_train['Season'] <= i].reset_index(drop = True) 
     
             if ((i + 1) == 2020): 
                 continue 
             else:
-                test_data = man_train[man_train['Season'] == (i + 1)].reset_index(drop = True)
+                test_data = woman_train[woman_train['Season'] == (i + 1)].reset_index(drop = True)
     
             X_train = train_data.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
             Y_train = train_data['ResultDiff']
             X_valid = test_data.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
             Y_valid = test_data['ResultDiff']
         
-            model = HistGradientRegressor(**param).fit(X_train, Y_train)
+            model = LGBMRegressor(**param).fit(X_train, Y_train)
             preds_valid = model.predict(X_valid)
 
             score = mean_squared_error(Y_valid, preds_valid)
@@ -107,18 +108,23 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 70
+N_TRIALS = 50
 
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
-## Building model with optuna parameters
-X = man_train.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
-Y = man_train['ResultDiff']
+optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+file_name = 'woman_LightGBM_Phase_1_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+optuna_hyper_params.to_csv(file_name, index = False)
 
-hist_md = HistGradientRegressor(**study.best_trial.params).fit(X, Y)
 
-hist_pred_test = hist_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points'], axis = 1))
-man_test['ResultDiff'] = round(hist_pred_test)
-man_test.to_csv('man_test_hist.csv', index = False)
+# ## Building model with optuna parameters
+# X = man_train.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
+# Y = man_train['ResultDiff']
+
+# hist_md = HistGradientRegressor(**study.best_trial.params).fit(X, Y)
+
+# hist_pred_test = hist_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points'], axis = 1))
+# man_test['ResultDiff'] = round(hist_pred_test)
+# man_test.to_csv('man_test_hist.csv', index = False)

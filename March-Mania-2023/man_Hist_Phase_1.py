@@ -12,7 +12,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import KFold, train_test_split, GridSearchCV, StratifiedKFold, TimeSeriesSplit
 from sklearn.metrics import mean_squared_error, roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import HistGradientBoostingRegressor, GradientBoostingRegressor
+from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier, HistGradientBoostingRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LogisticRegression
 from lightgbm import LGBMClassifier, LGBMRegressor 
 from xgboost import XGBClassifier, XGBRegressor
@@ -71,15 +71,14 @@ class Objective:
     def __call__(self, trial):
         
         ## Parameters to be evaluated
-        param = dict(tree_method = 'hist', 
-                     max_depth = trial.suggest_int('max_depth', 2, 10),
-                     learning_rate = trial.suggest_float('learning_rate', 1e-4, 1e-1, log = True),
-                     n_estimators = trial.suggest_int('n_estimators', 30, 10000),
-                     gamma = trial.suggest_float('gamma', 0, 10),
-                     min_child_weight = trial.suggest_int('min_child_weight', 1, 100),
-                     colsample_bytree = trial.suggest_float('colsample_bytree', 0.2, 0.9),
-                     subsample = trial.suggest_float('subsample', 0.2, 0.9)
-#                      device = 'gpu'
+        param = dict(l2_regularization = trial.suggest_float('l2_regularization', 0.01, 10.0, log = True),
+                      early_stopping = trial.suggest_categorical('early_stopping', [False]),
+                      learning_rate = trial.suggest_float('learning_rate', 0.001, 1, log = True),
+                      max_iter = trial.suggest_categorical('max_iter', [1000]),
+                      max_depth = trial.suggest_int('max_depth', 2, 15),
+                      max_bins = trial.suggest_int('max_bins', 100, 255),
+                      min_samples_leaf = trial.suggest_int('min_samples_leaf', 20, 100),
+                      max_leaf_nodes = trial.suggest_int('max_leaf_nodes', 20, 100)
                     )
 
         scores = []
@@ -98,7 +97,7 @@ class Objective:
             X_valid = test_data.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
             Y_valid = test_data['ResultDiff']
         
-            model = XGBRegressor(**param).fit(X_train, Y_train)
+            model = HistGradientBoostingRegressor(**param).fit(X_train, Y_train)
             preds_valid = model.predict(X_valid)
 
             score = mean_squared_error(Y_valid, preds_valid)
@@ -114,12 +113,8 @@ N_TRIALS = 50
 study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
-print('----------------------------------------')
-print(' (-: Saving Optuna Hyper-Parameters :-) ')
-print('----------------------------------------')
-
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
-file_name = 'man_XGB_Phase_1_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+file_name = 'man_Hist_Phase_1_' + str(SEED) + '_Optuna_Hyperparameters.csv'
 optuna_hyper_params.to_csv(file_name, index = False)
 
 
@@ -127,8 +122,8 @@ optuna_hyper_params.to_csv(file_name, index = False)
 # X = man_train.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
 # Y = man_train['ResultDiff']
 
-# xgb_md = XGBRegressor(**study.best_trial.params).fit(X, Y)
+# hist_md = HistGradientRegressor(**study.best_trial.params).fit(X, Y)
 
-# xgb_pred_test = xgb_md.predict(man_test.drop(columns = ['ID''Season', 'T1', 'T2'], axis = 1))
-# man_test['ResultDiff'] = round(xgb_pred_test)
-# man_test.to_csv('man_test_xgb.csv', index = False)
+# hist_pred_test = hist_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points'], axis = 1))
+# man_test['ResultDiff'] = round(hist_pred_test)
+# man_test.to_csv('man_test_hist.csv', index = False)

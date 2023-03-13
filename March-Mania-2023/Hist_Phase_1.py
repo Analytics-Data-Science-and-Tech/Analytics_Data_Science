@@ -12,7 +12,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import KFold, train_test_split, GridSearchCV, StratifiedKFold, TimeSeriesSplit
 from sklearn.metrics import mean_squared_error, roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier, HistGradientRegressor, GradientBoostingRegressor
+from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier, HistGradientBoostingRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LogisticRegression
 from lightgbm import LGBMClassifier, LGBMRegressor 
 from xgboost import XGBClassifier, XGBRegressor
@@ -113,12 +113,17 @@ N_TRIALS = 70
 study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
-## Building model with optuna parameters
-X = man_train.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
-Y = man_train['ResultDiff']
+optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+file_name = 'man_Hist_Phase_1_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+optuna_hyper_params.to_csv(file_name, index = False)
 
-hist_md = HistGradientRegressor(**study.best_trial.params).fit(X, Y)
 
-hist_pred_test = hist_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points'], axis = 1))
-man_test['ResultDiff'] = round(hist_pred_test)
-man_test.to_csv('man_test_hist.csv', index = False)
+# ## Building model with optuna parameters
+# X = man_train.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
+# Y = man_train['ResultDiff']
+
+# hist_md = HistGradientRegressor(**study.best_trial.params).fit(X, Y)
+
+# hist_pred_test = hist_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points'], axis = 1))
+# man_test['ResultDiff'] = round(hist_pred_test)
+# man_test.to_csv('man_test_hist.csv', index = False)

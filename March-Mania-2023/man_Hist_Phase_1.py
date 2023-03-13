@@ -72,7 +72,7 @@ class Objective:
         
         ## Parameters to be evaluated
         param = dict(l2_regularization = trial.suggest_float('l2_regularization', 0.01, 10.0, log = True),
-                      early_stopping = trial.suggest_categorical('early_stopping', ['False']),
+                      early_stopping = trial.suggest_categorical('early_stopping', [False]),
                       learning_rate = trial.suggest_float('learning_rate', 0.001, 1, log = True),
                       max_iter = trial.suggest_categorical('max_iter', [1000]),
                       max_depth = trial.suggest_int('max_depth', 2, 15),
@@ -107,7 +107,7 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 70
+N_TRIALS = 50
 
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')

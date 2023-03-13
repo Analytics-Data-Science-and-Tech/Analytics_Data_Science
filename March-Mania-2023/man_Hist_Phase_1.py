@@ -97,7 +97,7 @@ class Objective:
             X_valid = test_data.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
             Y_valid = test_data['ResultDiff']
         
-            model = HistGradientRegressor(**param).fit(X_train, Y_train)
+            model = HistGradientBoostingRegressor(**param).fit(X_train, Y_train)
             preds_valid = model.predict(X_valid)
 
             score = mean_squared_error(Y_valid, preds_valid)

@@ -86,12 +86,12 @@ class Objective:
         
         for i in range(2010, 2022):
     
-            train_data = man_train[man_train['Season'] <= i].reset_index(drop = True) 
+            train_data = woman_train[woman_train['Season'] <= i].reset_index(drop = True) 
     
             if ((i + 1) == 2020): 
                 continue 
             else:
-                test_data = man_train[man_train['Season'] == (i + 1)].reset_index(drop = True)
+                test_data = woman_train[woman_train['Season'] == (i + 1)].reset_index(drop = True)
     
             X_train = train_data.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
             Y_train = train_data['ResultDiff']
@@ -120,6 +120,6 @@ Y = man_train['ResultDiff']
 
 xgb_md = XGBRegressor(**study.best_trial.params).fit(X, Y)
 
-xgb_pred_test = xgb_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points'], axis = 1))
+xgb_pred_test = xgb_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2'], axis = 1))
 man_test['ResultDiff'] = round(xgb_pred_test)
-man_test.to_csv('man_test_xgb.csv', index = False)
+man_test.to_csv('woman_test_xgb.csv', index = False)

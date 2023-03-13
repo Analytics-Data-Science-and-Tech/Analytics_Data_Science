@@ -114,12 +114,20 @@ N_TRIALS = 70
 study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
-## Building model with optuna parameters
-X = man_train.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
-Y = man_train['ResultDiff']
+print('----------------------------------------')
+print(' (-: Saving Optuna Hyper-Parameters :-) ')
+print('----------------------------------------')
 
-xgb_md = XGBRegressor(**study.best_trial.params).fit(X, Y)
+optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
+file_name = 'woman_XGB_Phase_1_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+optuna_hyper_params.to_csv(file_name, index = False)
 
-xgb_pred_test = xgb_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2'], axis = 1))
-man_test['ResultDiff'] = round(xgb_pred_test)
-man_test.to_csv('woman_test_xgb.csv', index = False)
+# ## Building model with optuna parameters
+# X = man_train.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
+# Y = man_train['ResultDiff']
+
+# xgb_md = XGBRegressor(**study.best_trial.params).fit(X, Y)
+
+# xgb_pred_test = xgb_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2'], axis = 1))
+# man_test['ResultDiff'] = round(xgb_pred_test)
+# man_test.to_csv('woman_test_xgb.csv', index = False)

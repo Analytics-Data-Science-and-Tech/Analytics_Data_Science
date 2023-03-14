@@ -136,7 +136,7 @@ class Objective:
         param = dict(tree_method = 'hist', 
                      max_depth = trial.suggest_int('max_depth', 2, 10),
                      learning_rate = trial.suggest_float('learning_rate', 1e-4, 1e-1, log = True),
-                     n_estimators = trial.suggest_int('n_estimators', 30, 10000),
+                     n_estimators = trial.suggest_int('n_estimators', 30, 5000),
                      gamma = trial.suggest_float('gamma', 0, 10),
                      min_child_weight = trial.suggest_int('min_child_weight', 1, 100),
                      colsample_bytree = trial.suggest_float('colsample_bytree', 0.2, 0.9),
@@ -159,7 +159,7 @@ class Objective:
             X_valid = test_data[to_select]
             Y_valid = test_data['target']
         
-            model = XGBRegressor(**param).fit(X_train, Y_train)
+            model = XGBClassifier(**param).fit(X_train, Y_train)
             preds_valid = model.predict(X_valid)
 
             score = mean_squared_error(Y_valid, preds_valid)

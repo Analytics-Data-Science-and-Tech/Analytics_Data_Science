@@ -180,5 +180,5 @@ print(' (-: Saving Optuna Hyper-Parameters :-) ')
 print('----------------------------------------')
 
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
-file_name = 'man_XGB_Phase_2_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+file_name = 'woman_XGB_Phase_2_' + str(SEED) + '_Optuna_Hyperparameters.csv'
 optuna_hyper_params.to_csv(file_name, index = False)

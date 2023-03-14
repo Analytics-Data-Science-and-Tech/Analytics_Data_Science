@@ -169,7 +169,7 @@ class Objective:
     
 ## Defining SEED and Trials
 SEED = 42
-N_TRIALS = 5
+N_TRIALS = 50
 
 # Execute an optimization
 study = optuna.create_study(direction = 'minimize')

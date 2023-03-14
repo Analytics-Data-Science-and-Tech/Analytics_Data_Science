@@ -159,8 +159,8 @@ class Objective:
             X_valid = test_data[to_select]
             Y_valid = test_data['target']
         
-            model = XGBRegressor(**param).fit(X_train, Y_train)
-            preds_valid = model.predict(X_valid)
+            model = XGBClassifier(**param).fit(X_train, Y_train)
+            preds_valid = model.predict_proba(X_valid)[:, 1]
 
             score = mean_squared_error(Y_valid, preds_valid)
             scores.append(score)

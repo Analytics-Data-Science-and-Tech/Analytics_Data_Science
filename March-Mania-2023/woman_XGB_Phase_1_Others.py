@@ -128,12 +128,12 @@ class Objective:
         
         for i in range(2013, 2022):
     
-            train_data = woman_train[man_train['Season'] <= i].reset_index(drop = True) 
+            train_data = woman_train[woman_train['Season'] <= i].reset_index(drop = True) 
     
             if ((i + 1) == 2020): 
                 continue 
             else:
-                test_data = woman_train[man_train['Season'] == (i + 1)].reset_index(drop = True)
+                test_data = woman_train[woman_train['Season'] == (i + 1)].reset_index(drop = True)
     
             X_train = train_data.drop(columns = ['Season', 'ResultDiff'], axis = 1)
             Y_train = train_data['ResultDiff']

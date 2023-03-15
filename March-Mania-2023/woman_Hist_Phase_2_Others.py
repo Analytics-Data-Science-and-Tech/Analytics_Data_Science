@@ -12,7 +12,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import KFold, train_test_split, GridSearchCV, StratifiedKFold, TimeSeriesSplit
 from sklearn.metrics import mean_squared_error, roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import HistGradientBoostingRegressor, GradientBoostingRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor, GradientBoostingRegressor, HistGradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from lightgbm import LGBMClassifier, LGBMRegressor 
 from xgboost import XGBClassifier, XGBRegressor

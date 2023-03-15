@@ -117,14 +117,3 @@ study.optimize(Objective(SEED), n_trials = N_TRIALS)
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
 file_name = 'man_LightGBM_Phase_1_' + str(SEED) + '_Optuna_Hyperparameters.csv'
 optuna_hyper_params.to_csv(file_name, index = False)
-
-
-# ## Building model with optuna parameters
-# X = man_train.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points', 'ResultDiff', 'target'], axis = 1)
-# Y = man_train['ResultDiff']
-
-# hist_md = HistGradientRegressor(**study.best_trial.params).fit(X, Y)
-
-# hist_pred_test = hist_md.predict(man_test.drop(columns = ['Season', 'T1', 'T2', 'T1_Points', 'T2_Points'], axis = 1))
-# man_test['ResultDiff'] = round(hist_pred_test)
-# man_test.to_csv('man_test_hist.csv', index = False)

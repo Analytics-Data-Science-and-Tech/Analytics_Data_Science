@@ -54,7 +54,8 @@ woman_test = pd.read_csv(file_content_stream_4)
 man_train['target'] = np.where(man_train['ResultDiff'] > 0, 1, 0)
 woman_train['target'] = np.where(woman_train['ResultDiff'] > 0, 1, 0)
 
-to_select = ['X1_WinRatio14d',
+to_select = ['Season',
+             'X1_WinRatio14d',
              'X1_PointsMean',
              'X1_PointsMedian',
              'X1_PointsDiffMean',
@@ -134,9 +135,9 @@ class Objective:
             else:
                 test_data = man_train[man_train['Season'] == (i + 1)].reset_index(drop = True)
     
-            X_train = train_data.drop(columns = 'ResultDiff', axis = 1)
+            X_train = train_data.drop(columns = ['Season', 'ResultDiff'], axis = 1)
             Y_train = train_data['ResultDiff']
-            X_valid = test_data.drop(columns = 'ResultDiff', axis = 1)
+            X_valid = test_data.drop(columns = ['Season', 'ResultDiff'], axis = 1)
             Y_valid = test_data['ResultDiff']
         
             model = XGBRegressor(**param).fit(X_train, Y_train)

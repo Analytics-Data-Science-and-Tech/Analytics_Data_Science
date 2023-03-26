@@ -134,7 +134,7 @@ class Objective:
 
         scores = []
         
-        skf = StratifiedKFold(n_splits = 30, shuffle = True, random_state = self.seed)
+        skf = KFold(n_splits = 30, shuffle = True, random_state = self.seed)
 
         for train_idx, valid_idx in skf.split(X, Y):
 

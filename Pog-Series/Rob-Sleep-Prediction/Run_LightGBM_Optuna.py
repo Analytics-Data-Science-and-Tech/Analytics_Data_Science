@@ -129,7 +129,6 @@ class Objective:
                      num_leaves = trial.suggest_int('num_leaves', 2, 100),
                      bagging_fraction = trial.suggest_float('bagging_fraction', 0.2, 0.9),
                      feature_fraction = trial.suggest_float('feature_fraction', 0.2, 0.9)
-#                      device = 'gpu'
                     )
 
         scores = []
@@ -145,7 +144,7 @@ class Objective:
 
             preds_valid = model.predict(X_valid)
 
-            score = roc_auc_score(Y_valid, preds_valid)
+            score = mean_squared_error(Y_valid, preds_valid, squared = False)
             scores.append(score)
 
         return np.mean(scores)

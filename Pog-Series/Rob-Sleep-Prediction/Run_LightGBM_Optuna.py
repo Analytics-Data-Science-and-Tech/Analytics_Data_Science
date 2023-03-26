@@ -34,7 +34,6 @@ bucket = s3.Bucket(bucket_name)
 file_key_1 = 'Tabular-Playground-Series/Pog-Series/Rob-Sleep-Prediction/train.csv'
 file_key_2 = 'Tabular-Playground-Series/Pog-Series/Rob-Sleep-Prediction/test.csv'
 file_key_3 = 'Tabular-Playground-Series/Pog-Series/Rob-Sleep-Prediction/sample_submission.csv'
-# file_key_4 = 'Tabular-Playground-Series/PS-S3/Ep10/Pulsar.csv'
 
 bucket_object_1 = bucket.Object(file_key_1)
 file_object_1 = bucket_object_1.get()
@@ -193,4 +192,6 @@ for i in tqdm(range(5)):
 lgb_cv_score = np.mean(lgb_cv_scores)    
 print('The average oof rmse score over 5-folds (run 5 times) is:', lgb_cv_score)
 
-
+lgb_preds = pd.DataFrame(preds).mean(axis = 0)
+submission['sleep_hours'] =  lgb_preds
+submission.to_csv('lgb_baseline_optuna_submission.csv', index = False)

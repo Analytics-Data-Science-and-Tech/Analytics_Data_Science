@@ -120,9 +120,9 @@ class Objective:
     def __call__(self, trial):
         
         ## Parameters to be evaluated
-        param = dict(max_iter =  trial.suggest_int('max_iter', [10000]),
+        param = dict(max_iter =  trial.suggest_int('max_iter', 1000, 1000),
                      alpha = trial.suggest_float('alpha', 1e-4, 100, log = True), 
-                     l1_ratio =  trial.suggest_float('l1_ratio', 1e-4, 100, log = True) 
+                     l1_ratio =  trial.suggest_float('l1_ratio', 1e-4, 1, log = True) 
                     )
 
         scores = []

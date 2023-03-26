@@ -143,7 +143,7 @@ class Objective:
 
             model = LGBMRegressor(**param).fit(X_train, Y_train)
 
-            preds_valid = model.predict_proba(X_valid)[:, 1]
+            preds_valid = model.predict(X_valid)
 
             score = roc_auc_score(Y_valid, preds_valid)
             scores.append(score)

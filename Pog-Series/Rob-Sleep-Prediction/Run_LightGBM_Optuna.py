@@ -167,7 +167,7 @@ print('----------------------------')
 
 lgb_cv_scores, preds = list(), list()
 
-for i in tqdm(range(5)):
+for i in tqdm(range(1)):
 
     skf = KFold(n_splits = 30, random_state = SEED, shuffle = True)
     

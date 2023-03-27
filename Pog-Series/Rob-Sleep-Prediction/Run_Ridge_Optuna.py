@@ -121,8 +121,7 @@ class Objective:
         
         ## Parameters to be evaluated
         param = dict(max_iter =  trial.suggest_categorical('max_iter', [10000]),
-                     alpha = trial.suggest_float('alpha', 1e-4, 100, log = True), 
-                     l1_ratio =  trial.suggest_float('l1_ratio', 1e-4, 1, log = True) 
+                     alpha = trial.suggest_float('alpha', 1e-4, 100, log = True)
                     )
 
         scores = []
@@ -138,7 +137,7 @@ class Objective:
 #             X_train = scaler.transform(X_train)
 #             X_valid = scaler.transform(X_valid)
 
-            model = ElasticNet(**param).fit(X_train, Y_train)
+            model = Ridge(**param).fit(X_train, Y_train)
 
             preds_valid = model.predict(X_valid)
 
@@ -156,14 +155,14 @@ study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
-file_name = 'Elastic_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+file_name = 'Ridge_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
 optuna_hyper_params.to_csv(file_name, index = False)
 
 print('----------------------------')
 print(' (-: Starting CV process :-)')
 print('----------------------------')
 
-elastic_cv_scores, preds = list(), list()
+ridge_cv_scores, preds = list(), list()
 
 for i in tqdm(range(1)):
 
@@ -181,19 +180,19 @@ for i in tqdm(range(1)):
 #         test = scaler.transform(test)
                 
         ## Building XGBoost model
-        elastic_md = ElasticNet(**study.best_trial.params).fit(X_train, Y_train)
+        ridge_md = Ridge(**study.best_trial.params).fit(X_train, Y_train)
         
         ## Predicting on X_test and test
-        elastic_pred_1 = elastic_md.predict(X_test)
-        elastic_pred_2 = elastic_md.predict(test)
+        ridge_pred_1 = ridge_md.predict(X_test)
+        ridge_pred_2 = ridge_md.predict(test)
         
         ## Computing rmse
-        elastic_cv_scores.append(mean_squared_error(Y_test, elastic_pred_1, squared = False))
-        preds.append(elastic_pred_2)
+        ridge_cv_scores.append(mean_squared_error(Y_test, ridge_pred_1, squared = False))
+        preds.append(ridge_pred_2)
 
-elastic_cv_score = np.mean(elastic_cv_scores)    
-print('The average oof rmse score over 5-folds (run 5 times) is:', elastic_cv_score)
+ridge_cv_score = np.mean(ridge_cv_scores)    
+print('The average oof rmse score over 5-folds (run 5 times) is:', ridge_cv_score)
 
-elastic_preds = pd.DataFrame(preds).mean(axis = 0)
-submission['sleep_hours'] =  elastic_preds
-submission.to_csv('elastic_baseline_optuna_submission_1.csv', index = False)
+ridge_preds = pd.DataFrame(preds).mean(axis = 0)
+submission['sleep_hours'] =  ridge_preds
+submission.to_csv('ridge_baseline_optuna_submission.csv', index = False)

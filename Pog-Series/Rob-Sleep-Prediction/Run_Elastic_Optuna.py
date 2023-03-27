@@ -120,7 +120,7 @@ class Objective:
     def __call__(self, trial):
         
         ## Parameters to be evaluated
-        param = dict(max_iter =  trial.suggest_categorical('max_iter', 5000),
+        param = dict(max_iter =  trial.suggest_categorical('max_iter', [10000]),
                      alpha = trial.suggest_float('alpha', 1e-4, 100, log = True), 
                      l1_ratio =  trial.suggest_float('l1_ratio', 1e-4, 1, log = True) 
                     )
@@ -134,9 +134,9 @@ class Objective:
             X_train, X_valid = X.iloc[train_idx], X.iloc[valid_idx]
             Y_train , Y_valid = Y.iloc[train_idx] , Y.iloc[valid_idx]
             
-            scaler = StandardScaler().fit(X_train)
-            X_train = scaler.transform(X_train)
-            X_valid = scaler.transform(X_valid)
+#             scaler = MinMaxScaler().fit(X_train)
+#             X_train = scaler.transform(X_train)
+#             X_valid = scaler.transform(X_valid)
 
             model = ElasticNet(**param).fit(X_train, Y_train)
 
@@ -175,10 +175,10 @@ for i in tqdm(range(1)):
         X_train, X_test = X.iloc[train_ix], X.iloc[test_ix]
         Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
         
-        scaler = StandardScaler().fit(X_train)
-        X_train = scaler.transform(X_train)
-        X_valid = scaler.transform(X_valid)
-        test = scaler.transform(test)
+#         scaler = MinMaxScaler().fit(X_train)
+#         X_train = scaler.transform(X_train)
+#         X_test = scaler.transform(X_test)
+#         test = scaler.transform(test)
                 
         ## Building XGBoost model
         elastic_md = ElasticNet(**study.best_trial.params).fit(X_train, Y_train)

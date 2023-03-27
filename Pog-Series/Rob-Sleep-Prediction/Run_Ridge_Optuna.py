@@ -120,7 +120,7 @@ class Objective:
     def __call__(self, trial):
         
         ## Parameters to be evaluated
-        param = dict(max_iter =  trial.suggest_categorical('max_iter', [10000]),
+        param = dict(max_iter =  trial.suggest_categorical('max_iter', [20000]),
                      alpha = trial.suggest_float('alpha', 1e-4, 100, log = True)
                     )
 

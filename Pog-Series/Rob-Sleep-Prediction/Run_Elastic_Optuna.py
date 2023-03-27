@@ -15,7 +15,7 @@ import seaborn as sns
 from scipy.stats import rankdata
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.tree import DecisionTreeRegressor, plot_tree
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import KFold, train_test_split, GridSearchCV, StratifiedKFold, TimeSeriesSplit, GroupKFold
 from sklearn.metrics import mean_squared_error, roc_auc_score, log_loss
 from sklearn.neighbors import KNeighborsClassifier
@@ -120,7 +120,7 @@ class Objective:
     def __call__(self, trial):
         
         ## Parameters to be evaluated
-        param = dict(max_iter =  trial.suggest_int('max_iter', 1000, 1000),
+        param = dict(max_iter =  trial.suggest_categorical('max_iter', 5000),
                      alpha = trial.suggest_float('alpha', 1e-4, 100, log = True), 
                      l1_ratio =  trial.suggest_float('l1_ratio', 1e-4, 1, log = True) 
                     )
@@ -133,6 +133,10 @@ class Objective:
 
             X_train, X_valid = X.iloc[train_idx], X.iloc[valid_idx]
             Y_train , Y_valid = Y.iloc[train_idx] , Y.iloc[valid_idx]
+            
+            scaler = StandardScaler().fit(X_train)
+            X_train = scaler.transform(X_train)
+            X_valid = scaler.transform(X_valid)
 
             model = ElasticNet(**param).fit(X_train, Y_train)
 
@@ -170,6 +174,11 @@ for i in tqdm(range(1)):
         ## Splitting the data 
         X_train, X_test = X.iloc[train_ix], X.iloc[test_ix]
         Y_train, Y_test = Y.iloc[train_ix], Y.iloc[test_ix]
+        
+        scaler = StandardScaler().fit(X_train)
+        X_train = scaler.transform(X_train)
+        X_valid = scaler.transform(X_valid)
+        test = scaler.transform(test)
                 
         ## Building XGBoost model
         elastic_md = ElasticNet(**study.best_trial.params).fit(X_train, Y_train)
@@ -187,4 +196,4 @@ print('The average oof rmse score over 5-folds (run 5 times) is:', elastic_cv_sc
 
 elastic_preds = pd.DataFrame(preds).mean(axis = 0)
 submission['sleep_hours'] =  elastic_preds
-submission.to_csv('elastic_baseline_optuna_submission.csv', index = False)
+submission.to_csv('elastic_baseline_optuna_submission_1.csv', index = False)

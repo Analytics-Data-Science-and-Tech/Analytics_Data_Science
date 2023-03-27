@@ -196,4 +196,4 @@ print('The average oof rmse score over 5-folds (run 5 times) is:', elastic_cv_sc
 
 elastic_preds = pd.DataFrame(preds).mean(axis = 0)
 submission['sleep_hours'] =  elastic_preds
-submission.to_csv('elastic_baseline_optuna_submission_1.csv', index = False)
+submission.to_csv('elastic_baseline_optuna_submission.csv', index = False)

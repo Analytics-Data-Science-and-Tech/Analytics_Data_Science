@@ -122,7 +122,8 @@ class Objective:
         ## Parameters to be evaluated
         param = dict(max_iter =  trial.suggest_categorical('max_iter', [10000]),
                      alpha = trial.suggest_float('alpha', 1e-4, 100, log = True), 
-                     l1_ratio =  trial.suggest_float('l1_ratio', 1e-4, 1, log = True) 
+                     l1_ratio =  trial.suggest_float('l1_ratio', 1e-4, 1, log = True), 
+                     fit_intercept = trial.suggest_categorical('fit_intercept', [False])
                     )
 
         scores = []

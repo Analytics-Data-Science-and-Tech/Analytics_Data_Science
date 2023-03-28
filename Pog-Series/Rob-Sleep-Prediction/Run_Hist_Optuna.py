@@ -120,8 +120,14 @@ class Objective:
     def __call__(self, trial):
         
         ## Parameters to be evaluated
-        param = dict(max_iter =  trial.suggest_categorical('max_iter', [20000]),
-                     alpha = trial.suggest_float('alpha', 1e-4, 100, log = True)
+        param = dict(l2_regularization = trial.suggest_float('l2_regularization', 0.01, 10.0, log = True),
+                     early_stopping = trial.suggest_categorical('early_stopping', [False]),
+                     learning_rate = trial.suggest_float('learning_rate', 0.001, 1, log = True),
+                     max_iter = trial.suggest_categorical('max_iter', [1000]),
+                     max_depth = trial.suggest_int('max_depth', 2, 15),
+                     max_bins = trial.suggest_int('max_bins', 100, 255),
+                     min_samples_leaf = trial.suggest_int('min_samples_leaf', 20, 100),
+                     max_leaf_nodes = trial.suggest_int('max_leaf_nodes', 20, 100)
                     )
 
         scores = []
@@ -137,7 +143,7 @@ class Objective:
 #             X_train = scaler.transform(X_train)
 #             X_valid = scaler.transform(X_valid)
 
-            model = Lasso(**param).fit(X_train, Y_train)
+            model = HistGradientBoostingRegressor(**param).fit(X_train, Y_train)
 
             preds_valid = model.predict(X_valid)
 
@@ -155,14 +161,14 @@ study = optuna.create_study(direction = 'minimize')
 study.optimize(Objective(SEED), n_trials = N_TRIALS)
 
 optuna_hyper_params = pd.DataFrame.from_dict([study.best_trial.params])
-file_name = 'Lasso_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
+file_name = 'hist_Seed_' + str(SEED) + '_Optuna_Hyperparameters.csv'
 optuna_hyper_params.to_csv(file_name, index = False)
 
 print('----------------------------')
 print(' (-: Starting CV process :-)')
 print('----------------------------')
 
-lasso_cv_scores, preds = list(), list()
+hist_cv_scores, preds = list(), list()
 
 for i in tqdm(range(1)):
 
@@ -180,19 +186,19 @@ for i in tqdm(range(1)):
 #         test = scaler.transform(test)
                 
         ## Building XGBoost model
-        lasso_md = Lasso(**study.best_trial.params).fit(X_train, Y_train)
+        hist_md = HistGradientBoostingRegressor(**study.best_trial.params).fit(X_train, Y_train)
         
         ## Predicting on X_test and test
-        lasso_pred_1 = lasso_md.predict(X_test)
-        lasso_pred_2 = lasso_md.predict(test)
+        hist_pred_1 = hist_md.predict(X_test)
+        hist_pred_2 = hist_md.predict(test)
         
         ## Computing rmse
-        lasso_cv_scores.append(mean_squared_error(Y_test, lasso_pred_1, squared = False))
-        preds.append(lasso_pred_2)
+        hist_cv_scores.append(mean_squared_error(Y_test, hist_pred_1, squared = False))
+        preds.append(hist_pred_2)
 
-lasso_cv_score = np.mean(lasso_cv_scores)    
-print('The average oof rmse score over 5-folds (run 5 times) is:', lasso_cv_score)
+hist_cv_score = np.mean(hist_cv_scores)    
+print('The average oof rmse score over 5-folds (run 5 times) is:', hist_cv_score)
 
-lasso_preds = pd.DataFrame(preds).mean(axis = 0)
-submission['sleep_hours'] =  lasso_preds
-submission.to_csv('lasso_baseline_optuna_submission.csv', index = False)
+hist_preds = pd.DataFrame(preds).mean(axis = 0)
+submission['sleep_hours'] =  hist_preds
+submission.to_csv('hist_baseline_optuna_submission.csv', index = False)

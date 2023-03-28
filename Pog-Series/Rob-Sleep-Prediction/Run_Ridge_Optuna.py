@@ -81,7 +81,7 @@ def feature_engineer(df):
 #     new_df["day_cos"] = np.cos(new_df['day'] * (2 * np.pi / 12))
     
     new_df["day_of_week"] = df["date"].dt.dayofweek
-    new_df["day_of_week"] = new_df["day_of_week"].apply(lambda x: 0 if x <= 3 else(1 if x == 4 else (2 if x == 5 else (3))))
+#     new_df["day_of_week"] = new_df["day_of_week"].apply(lambda x: 0 if x <= 3 else(1 if x == 4 else (2 if x == 5 else (3))))
     
     new_df["day_of_year"] = df["date"].dt.dayofyear
     new_df["year"] = df["date"].dt.year
@@ -120,7 +120,7 @@ class Objective:
     def __call__(self, trial):
         
         ## Parameters to be evaluated
-        param = dict(max_iter =  trial.suggest_categorical('max_iter', [10000]),
+        param = dict(max_iter =  trial.suggest_categorical('max_iter', [20000]),
                      alpha = trial.suggest_float('alpha', 1e-4, 100, log = True)
                     )
 

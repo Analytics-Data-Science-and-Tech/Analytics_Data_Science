@@ -81,7 +81,7 @@ def feature_engineer(df):
 #     new_df["day_cos"] = np.cos(new_df['day'] * (2 * np.pi / 12))
     
     new_df["day_of_week"] = df["date"].dt.dayofweek
-    new_df["day_of_week"] = new_df["day_of_week"].apply(lambda x: 0 if x <= 3 else(1 if x == 4 else (2 if x == 5 else (3))))
+#     new_df["day_of_week"] = new_df["day_of_week"].apply(lambda x: 0 if x <= 3 else(1 if x == 4 else (2 if x == 5 else (3))))
     
     new_df["day_of_year"] = df["date"].dt.dayofyear
     new_df["year"] = df["date"].dt.year
@@ -196,4 +196,4 @@ print('The average oof rmse score over 5-folds (run 5 times) is:', elastic_cv_sc
 
 elastic_preds = pd.DataFrame(preds).mean(axis = 0)
 submission['sleep_hours'] =  elastic_preds
-submission.to_csv('elastic_baseline_optuna_submission_1.csv', index = False)
+submission.to_csv('elastic_baseline_optuna_submission.csv', index = False)

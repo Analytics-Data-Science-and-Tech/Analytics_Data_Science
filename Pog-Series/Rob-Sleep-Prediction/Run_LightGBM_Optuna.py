@@ -81,7 +81,7 @@ def feature_engineer(df):
 #     new_df["day_cos"] = np.cos(new_df['day'] * (2 * np.pi / 12))
     
     new_df["day_of_week"] = df["date"].dt.dayofweek
-    new_df["day_of_week"] = new_df["day_of_week"].apply(lambda x: 0 if x <= 3 else(1 if x == 4 else (2 if x == 5 else (3))))
+#     new_df["day_of_week"] = new_df["day_of_week"].apply(lambda x: 0 if x <= 3 else(1 if x == 4 else (2 if x == 5 else (3))))
     
     new_df["day_of_year"] = df["date"].dt.dayofyear
     new_df["year"] = df["date"].dt.year

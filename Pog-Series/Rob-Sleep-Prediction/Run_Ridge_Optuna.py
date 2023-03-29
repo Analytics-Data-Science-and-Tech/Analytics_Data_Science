@@ -103,6 +103,9 @@ test = test.drop(columns = ['date', 'sleep_hours', 'year'], axis = 1)
 
 train = train[train['date'] > '2015-07-20'].reset_index(drop = True)
 
+## Removing outliers
+train = train[~((train['sleep_hours'] < 4) | (train['sleep_hours'] > 8))].reset_index()
+
 #########################
 ## Optuna Optimization ##
 #########################
@@ -195,4 +198,4 @@ print('The average oof rmse score over 5-folds (run 5 times) is:', ridge_cv_scor
 
 ridge_preds = pd.DataFrame(preds).mean(axis = 0)
 submission['sleep_hours'] =  ridge_preds
-submission.to_csv('ridge_baseline_optuna_submission.csv', index = False)
+submission.to_csv('ridge_baseline_optuna_submission_no_outliers.csv', index = False)

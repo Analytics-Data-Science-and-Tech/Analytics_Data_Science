@@ -72,19 +72,19 @@ def get_holidays(df):
 def feature_engineer(df):
     
     new_df = df.copy()
-    new_df["month"] = df["date"].dt.month
-    new_df["month_sin"] = np.sin(new_df['month'] * (2 * np.pi / 12))
-#     new_df["month_cos"] = np.cos(new_df['month'] * (2 * np.pi / 12))
+    new_df['month'] = df['date'].dt.month
+    new_df['month_sin'] = np.sin(new_df['month'] * (2 * np.pi / 12))
+#     new_df['month_cos'] = np.cos(new_df['month'] * (2 * np.pi / 12))
     
-    new_df["day"] = df["date"].dt.day
-    new_df["day_sin"] = np.sin(new_df['day'] * (2 * np.pi / 12))
-#     new_df["day_cos"] = np.cos(new_df['day'] * (2 * np.pi / 12))
+    new_df['day'] = df['date'].dt.day
+    new_df['day_sin'] = np.sin(new_df['day'] * (2 * np.pi / 12))
+#     new_df['day_cos'] = np.cos(new_df['day'] * (2 * np.pi / 12))
     
-    new_df["day_of_week"] = df["date"].dt.dayofweek
+    new_df['day_of_week'] = df["date"].dt.dayofweek
 #     new_df["day_of_week"] = new_df["day_of_week"].apply(lambda x: 0 if x <= 3 else(1 if x == 4 else (2 if x == 5 else (3))))
     
-    new_df["day_of_year"] = df["date"].dt.dayofyear
-    new_df["year"] = df["date"].dt.year
+    new_df['day_of_year'] = df['date'].dt.dayofyear
+    new_df['year'] = df['date'].dt.year
     
     return new_df
 
@@ -102,6 +102,9 @@ Y = train['sleep_hours']
 test = test.drop(columns = ['date', 'sleep_hours', 'year'], axis = 1)
 
 train = train[train['date'] > '2015-07-20'].reset_index(drop = True)
+
+## Removing outliers
+train = train[~((train['sleep_hours'] < 4) | (train['sleep_hours'] > 8))].reset_index()
 
 #########################
 ## Optuna Optimization ##
@@ -195,4 +198,4 @@ print('The average oof rmse score over 5-folds (run 5 times) is:', ridge_cv_scor
 
 ridge_preds = pd.DataFrame(preds).mean(axis = 0)
 submission['sleep_hours'] =  ridge_preds
-submission.to_csv('ridge_baseline_optuna_submission.csv', index = False)
+submission.to_csv('ridge_baseline_optuna_submission_no_outliers.csv', index = False)
